@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#09091a">
+<title>Halal Shopping Tracker</title>
+<style>
+:root{
+  --bg:#09091a;--surface:#11112a;--card:#1a1a35;--border:#2a2a4a;
+  --green:#10d97a;--gdim:#0a2a1a;--gold:#fbbf24;--odim:#2a1a00;
+  --cream:#f5f0ff;--muted:#7a88b0;--red:#f43f5e;--blue:#38bdf8;
+  --purple:#c084fc;--text:#eae6ff;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow-x:hidden;}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:16px;padding-bottom:88px;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(9,9,26,.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:1rem 1.25rem .8rem;}
+.nav-top{display:flex;justify-content:space-between;align-items:center;}
+.nav-title{font-weight:800;font-size:1.15rem;color:var(--cream);letter-spacing:-.01em;}
+.nav-title small{display:block;font-size:.72rem;font-weight:500;color:var(--gold);opacity:.95;margin-top:.1rem;}
+.nav-save{padding:.42rem .9rem;border-radius:8px;border:1.5px solid var(--green);background:none;color:var(--green);font-size:.76rem;font-weight:700;cursor:pointer;transition:.18s;}
+.nav-save:hover{background:var(--gdim);}
+.tabs{display:flex;gap:.45rem;margin-top:.75rem;overflow-x:auto;scrollbar-width:none;padding-bottom:.05rem;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{flex-shrink:0;padding:.36rem .95rem;border-radius:20px;border:1.5px solid var(--border);background:none;color:var(--muted);font-size:.78rem;font-weight:700;cursor:pointer;transition:.18s;}
+.tab.on{background:var(--gold);border-color:var(--gold);color:#09091a;}
+.tab.meal-tab{border-color:rgba(192,132,252,.5);color:var(--purple);}
+.tab.meal-tab.on{background:var(--purple);border-color:var(--purple);color:#fff;}
+
+/* MAIN */
+main{margin:104px auto 0;padding:.9rem 1.1rem;max-width:680px;}
+
+/* MONTHLY CARD */
+.m-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1rem 1.1rem;margin-bottom:.85rem;}
+.m-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.7rem;}
+.m-label{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);}
+.m-nums{display:flex;gap:1rem;}
+.m-num .v{font-weight:800;font-size:1rem;}
+.m-num .l{font-size:.65rem;color:var(--muted);}
+.seg-bar{display:flex;gap:2px;height:12px;background:var(--border);border-radius:10px;overflow:hidden;}
+.seg{flex:1;height:100%;background:var(--border);position:relative;overflow:hidden;}
+.seg:first-child{border-radius:10px 0 0 10px;}.seg:last-child{border-radius:0 10px 10px 0;}
+.seg-fill{position:absolute;inset:0 auto 0 0;transition:width .45s cubic-bezier(.34,1.56,.64,1);}
+.s1 .seg-fill{background:#10d97a;}.s2 .seg-fill{background:#2dd4bf;}
+.s3 .seg-fill{background:#fbbf24;}.s4 .seg-fill{background:#fb923c;}
+.seg-fill.over{background:var(--red)!important;}
+.seg-labels{display:flex;gap:2px;margin-top:.28rem;}
+.seg-lbl{flex:1;text-align:center;font-size:.6rem;color:var(--muted);}
+.wk-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem;margin-top:.75rem;}
+.wk-mini{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:.45rem .35rem;text-align:center;cursor:pointer;transition:.18s;}
+.wk-mini:hover,.wk-mini.on{border-color:var(--gold);background:rgba(251,191,36,.07);}
+.wk-mini .wml{font-size:.62rem;font-weight:700;color:var(--muted);text-transform:uppercase;}
+.wk-mini .wms{font-weight:800;font-size:.88rem;margin-top:.1rem;}
+.wk-mini .wmr{font-size:.6rem;color:var(--muted);}
+.m-chip{margin-top:.65rem;display:flex;align-items:center;gap:.4rem;border-radius:9px;padding:.45rem .85rem;font-size:.78rem;border:1px solid rgba(56,189,248,.35);background:rgba(56,189,248,.08);color:var(--blue);line-height:1.4;}
+.m-chip.good{background:rgba(16,217,122,.1);border-color:rgba(16,217,122,.4);color:var(--green);}
+.m-chip.warn{background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.4);color:var(--gold);}
+.m-chip.bad{background:rgba(244,63,94,.1);border-color:rgba(244,63,94,.4);color:var(--red);}
+
+/* WEEK BUDGET */
+.w-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1rem 1.1rem;margin-bottom:.85rem;}
+.w-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.5rem;}
+.w-label{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);}
+.w-nums{display:flex;gap:1rem;}
+.w-num .v{font-weight:800;font-size:1rem;}
+.w-num .l{font-size:.65rem;color:var(--muted);}
+.prog{height:10px;background:var(--border);border-radius:10px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:10px;transition:width .45s cubic-bezier(.34,1.56,.64,1);background:linear-gradient(90deg,var(--green),#2dd4bf);}
+.prog-fill.over{background:linear-gradient(90deg,var(--gold),var(--red));}
+.prog-marks{display:flex;justify-content:space-between;margin-top:.24rem;}
+.prog-mark{font-size:.6rem;color:var(--muted);}
+.w-chip{margin-top:.6rem;display:flex;align-items:center;gap:.4rem;background:var(--gdim);border:1px solid var(--green);border-radius:9px;padding:.4rem .85rem;font-size:.78rem;color:var(--green);width:100%;line-height:1.3;}
+.w-chip.warn{background:var(--odim);border-color:var(--gold);color:var(--gold);}
+.w-chip.bad{background:rgba(244,63,94,.1);border-color:var(--red);color:var(--red);}
+
+/* ACTIONS */
+.actions{display:flex;gap:.45rem;margin-bottom:.8rem;flex-wrap:wrap;}
+.act{flex:1;min-width:68px;padding:.52rem .35rem;border-radius:9px;border:1.5px solid var(--border);background:none;color:var(--muted);font-size:.75rem;font-weight:700;cursor:pointer;text-align:center;transition:.18s;}
+.act:hover{border-color:var(--gold);color:var(--gold);}
+.act.add{border-color:rgba(16,217,122,.5);color:var(--green);}
+.act.add:hover{background:var(--gdim);}
+.act.del:hover{border-color:var(--red);color:var(--red);}
+
+/* CATEGORY */
+.cat-hd{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);padding:.42rem 0;margin:.72rem 0 .38rem;}
+
+/* ITEM */
+.item{display:grid;grid-template-columns:2rem 1fr auto;align-items:center;gap:.55rem;padding:.65rem .8rem;border-radius:11px;background:var(--card);border:1px solid var(--border);margin-bottom:.35rem;transition:.2s;}
+.item.done{opacity:.38;background:var(--surface);}
+.item.done .iname{text-decoration:line-through;}
+.chk{width:1.65rem;height:1.65rem;border-radius:6px;border:2px solid var(--border);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.82rem;flex-shrink:0;transition:.18s;color:transparent;}
+.chk.on{background:var(--green);border-color:var(--green);color:#09091a;}
+.iname{font-size:.88rem;line-height:1.25;font-weight:500;}
+.imeta{display:flex;align-items:center;gap:.3rem;margin-top:.16rem;flex-wrap:wrap;}
+.stag{font-size:.63rem;padding:.08rem .4rem;border-radius:5px;font-weight:700;cursor:pointer;}
+.sa{background:#1a2a55;color:#82b4ff;}.sl{background:#3a1e00;color:#ffb04a;}
+.sk{background:#3a0e0e;color:#ff8080;}.se{background:#0a2a15;color:#4ae87a;}
+.sn{background:#28103d;color:#c585ff;}.sf{background:#0d2535;color:#5dd0f0;}
+.sany{background:#282840;color:#b0b0d0;}.sc{background:#1e1e38;color:#a8a8f0;}
+.iright{display:flex;flex-direction:column;align-items:flex-end;gap:.22rem;flex-shrink:0;}
+.iprice{font-weight:800;font-size:.92rem;color:var(--green);cursor:pointer;padding:.08rem .28rem;border-radius:5px;}
+.iprice:hover{background:var(--gdim);}
+.ibtns{display:flex;gap:.18rem;}
+.ibtn{font-size:.6rem;padding:.1rem .28rem;border-radius:5px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;font-weight:700;transition:.13s;}
+.ibtn.ip:hover{border-color:var(--green);color:var(--green);}
+.ibtn.in:hover{border-color:var(--blue);color:var(--blue);}
+.ibtn.is:hover{border-color:var(--purple);color:var(--purple);}
+.ibtn.ir:hover{border-color:var(--red);color:var(--red);}
+
+/* BOTTOM BAR */
+.bar{position:fixed;bottom:0;left:0;right:0;background:rgba(9,9,26,.97);backdrop-filter:blur(20px);border-top:1px solid var(--border);padding:.75rem 1.25rem;z-index:200;}
+.bar-grid{display:grid;grid-template-columns:repeat(3,1fr);text-align:center;max-width:680px;margin:0 auto;}
+.bar-v{font-weight:800;font-size:1rem;}
+.bar-l{font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+
+/* MEAL PLAN */
+.mp-main{display:none;}
+.mp-main.on{display:block;}
+.mp-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.9rem;}
+.mp-header h2{font-weight:800;font-size:1.05rem;color:var(--cream);}
+.mp-gen{padding:.5rem 1rem;border-radius:9px;background:var(--purple);border:none;color:#fff;font-size:.78rem;font-weight:700;cursor:pointer;}
+.mp-gen:hover{opacity:.85;}
+.mp-empty{text-align:center;padding:2.5rem 1rem;color:var(--muted);line-height:1.8;}
+.mp-empty strong{display:block;font-size:1.05rem;color:var(--text);margin-bottom:.45rem;}
+.ing-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:.85rem;margin-bottom:.9rem;}
+.ing-title{font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem;}
+.ing-tags{display:flex;flex-wrap:wrap;gap:.32rem;}
+.ing-tag{font-size:.72rem;padding:.16rem .52rem;border-radius:12px;background:var(--gdim);color:var(--green);border:1px solid rgba(16,217,122,.3);}
+.mp-note{background:var(--odim);border:1px solid rgba(251,191,36,.35);border-radius:11px;padding:.6rem .9rem;font-size:.78rem;color:var(--gold);margin-bottom:.9rem;line-height:1.45;}
+.day-card{background:var(--card);border:1px solid var(--border);border-radius:13px;margin-bottom:.75rem;overflow:hidden;}
+.day-hd{padding:.7rem .95rem;display:flex;justify-content:space-between;align-items:center;}
+.day-hd.c0{background:linear-gradient(135deg,#0a2a1e,#1a1a35);}
+.day-hd.c1{background:linear-gradient(135deg,#2a1a00,#1a1a35);}
+.day-hd.c2{background:linear-gradient(135deg,#0a2535,#1a1a35);}
+.day-hd.c3{background:linear-gradient(135deg,#2a0e0e,#1a1a35);}
+.day-hd.c4{background:linear-gradient(135deg,#280e38,#1a1a35);}
+.day-hd.c5{background:linear-gradient(135deg,#1a2a55,#1a1a35);}
+.day-hd.c6{background:linear-gradient(135deg,#2a1a0a,#1a1a35);}
+.day-name{font-weight:800;font-size:.9rem;}
+.day-meals{padding:0 .95rem .8rem;}
+.meal{padding:.5rem 0;border-bottom:1px solid var(--border);}
+.meal:last-child{border-bottom:none;}
+.meal-row{display:grid;grid-template-columns:70px 1fr;gap:.42rem;}
+.meal-lbl{font-size:.65rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);padding-top:.12rem;line-height:1.2;}
+.meal-name{font-size:.88rem;font-weight:600;color:var(--cream);line-height:1.25;}
+.meal-desc{font-size:.75rem;color:var(--muted);margin-top:.18rem;line-height:1.35;}
+.meal-tags{display:flex;flex-wrap:wrap;gap:.25rem;margin-top:.25rem;}
+.mt{font-size:.62rem;padding:.08rem .38rem;border-radius:8px;font-weight:600;}
+.mtp{background:#2a0e0e;color:#ff8080;}.mtb{background:#1a2a55;color:#82b4ff;}
+.mte{background:#0a2a1e;color:#10d97a;}.mth{background:#2a1a00;color:#fbbf24;}
+
+/* MODALS */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:500;align-items:flex-end;justify-content:center;}
+.overlay.on{display:flex;}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:20px 20px 0 0;padding:1.4rem 1.25rem 1.9rem;width:100%;max-width:520px;animation:up .2s ease;}
+@keyframes up{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal h3{font-weight:800;font-size:1rem;margin-bottom:.22rem;color:var(--cream);}
+.modal p{font-size:.78rem;color:var(--muted);margin-bottom:.9rem;line-height:1.45;}
+.field{margin-bottom:.65rem;}
+.flbl{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:.26rem;}
+.finput{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:11px;padding:.72rem .95rem;font-size:.98rem;color:var(--text);transition:.18s;}
+.finput:focus{outline:none;border-color:var(--gold);}
+.finput.green{border-color:var(--green);color:var(--green);}
+.finput.blue{border-color:var(--blue);color:var(--blue);}
+.finput.purple{border-color:var(--purple);color:var(--purple);}
+.finput.num{text-align:center;font-weight:800;font-size:1.2rem;}
+select.finput{cursor:pointer;}
+select.finput option{background:var(--card);}
+.mbtns{display:flex;gap:.5rem;margin-top:.95rem;}
+.mbtn{flex:1;padding:.72rem;border-radius:11px;border:none;font-size:.82rem;font-weight:800;cursor:pointer;transition:.15s;}
+.mbtn.cancel{background:var(--border);color:var(--muted);}
+.mbtn.ok-green{background:var(--green);color:#09091a;}
+.mbtn.ok-blue{background:var(--blue);color:#fff;}
+.mbtn.ok-purple{background:var(--purple);color:#fff;}
+.mbtn.ok-red{background:var(--red);color:#fff;}
+textarea.finput{height:72px;resize:none;font-size:.7rem;font-family:monospace;}
+
+/* RESPONSIVE */
+@media(min-width:600px){
+  main{padding:1rem 1.5rem;}
+  nav{padding:1.1rem 1.5rem .85rem;}
+  main{margin-top:108px;}
+  .item{padding:.72rem 1rem;}
+  .m-card,.w-card{padding:1.1rem 1.25rem;}
+}
+@media(min-width:900px){
+  nav{padding:1.15rem 2rem .9rem;}
+  main{margin-top:112px;padding:1rem 2rem;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-top">
+    <div class="nav-title">Halal Tracker <small>☪️ Seelow · €25/wk · €100/mo</small></div>
+    <button class="nav-save" onclick="openSave()">💾 Save</button>
+  </div>
+  <div class="tabs" id="tabs">
+    <button class="tab on" onclick="go(1)">Week 1</button>
+    <button class="tab" onclick="go(2)">Week 2</button>
+    <button class="tab" onclick="go(3)">Week 3</button>
+    <button class="tab" onclick="go(4)">Week 4</button>
+    <button class="tab meal-tab" onclick="go('meal')">🍽️ Meal Plan</button>
+  </div>
+</nav>
+
+<main>
+  <!-- Monthly -->
+  <div class="m-card" id="mCard">
+    <div class="m-row">
+      <span class="m-label">📅 Monthly Budget — €100</span>
+      <div class="m-nums">
+        <div class="m-num"><div class="v" id="mSp" style="color:var(--red)">€0.00</div><div class="l">Spent</div></div>
+        <div class="m-num"><div class="v" id="mLf" style="color:var(--green)">€100.00</div><div class="l">Left</div></div>
+      </div>
+    </div>
+    <div class="seg-bar">
+      <div class="seg s1"><div class="seg-fill" id="sf1" style="width:0%"></div></div>
+      <div class="seg s2"><div class="seg-fill" id="sf2" style="width:0%"></div></div>
+      <div class="seg s3"><div class="seg-fill" id="sf3" style="width:0%"></div></div>
+      <div class="seg s4"><div class="seg-fill" id="sf4" style="width:0%"></div></div>
+    </div>
+    <div class="seg-labels">
+      <span class="seg-lbl">Wk 1 €25</span><span class="seg-lbl">Wk 2 €25</span>
+      <span class="seg-lbl">Wk 3 €25</span><span class="seg-lbl">Wk 4 €25</span>
+    </div>
+    <div class="wk-grid">
+      <div class="wk-mini on" id="wm1" onclick="go(1)"><div class="wml">Wk 1</div><div class="wms" id="ws1">€0.00</div><div class="wmr" id="wr1">€25 left</div></div>
+      <div class="wk-mini" id="wm2" onclick="go(2)"><div class="wml">Wk 2</div><div class="wms" id="ws2">€0.00</div><div class="wmr" id="wr2">€25 left</div></div>
+      <div class="wk-mini" id="wm3" onclick="go(3)"><div class="wml">Wk 3</div><div class="wms" id="ws3">€0.00</div><div class="wmr" id="wr3">€25 left</div></div>
+      <div class="wk-mini" id="wm4" onclick="go(4)"><div class="wml">Wk 4</div><div class="wms" id="ws4">€0.00</div><div class="wmr" id="wr4">€25 left</div></div>
+    </div>
+    <div class="m-chip" id="mChip">💡 Tick items across all weeks to build your monthly picture.</div>
+  </div>
+
+  <!-- Weekly budget -->
+  <div class="w-card" id="wCard">
+    <div class="w-top">
+      <span class="w-label">📦 Week <span id="wkN">1</span> — €25</span>
+      <div class="w-nums">
+        <div class="w-num"><div class="v" id="wSp" style="color:var(--red)">€0.00</div><div class="l">Ticked</div></div>
+        <div class="w-num"><div class="v" id="wLf" style="color:var(--green)">€25.00</div><div class="l">Left</div></div>
+      </div>
+    </div>
+    <div class="prog"><div class="prog-fill" id="pFill" style="width:0%"></div></div>
+    <div class="prog-marks"><span class="prog-mark">€0</span><span class="prog-mark">€6.25</span><span class="prog-mark">€12.50</span><span class="prog-mark">€18.75</span><span class="prog-mark">€25</span></div>
+    <div class="w-chip" id="wChip">💰 Tick items to track spending</div>
+  </div>
+
+  <!-- Actions -->
+  <div class="actions" id="acts">
+    <button class="act add" onclick="openAdd()">＋ Add Item</button>
+    <button class="act" onclick="checkAll()">✓ All</button>
+    <button class="act" onclick="uncheckAll()">↺ Uncheck</button>
+    <button class="act del" onclick="resetWk()">↩ Reset</button>
+  </div>
+
+  <!-- Week panels -->
+  <div id="panels"></div>
+
+  <!-- Meal plan -->
+  <div class="mp-main" id="mpMain">
+    <div class="mp-header">
+      <h2>🍽️ Meal Plan</h2>
+      <button class="mp-gen" onclick="genMeal()">⚡ Generate from Ticked</button>
+    </div>
+    <div id="mpBody">
+      <div class="mp-empty"><strong>No meal plan yet</strong>Tick groceries in any week tab,<br>then tap ⚡ Generate from Ticked.</div>
+    </div>
+  </div>
+</main>
+
+<!-- Bottom bar -->
+<div class="bar">
+  <div class="bar-grid">
+    <div><div class="bar-v" id="bTick" style="color:var(--green)">0/0</div><div class="bar-l">Ticked</div></div>
+    <div><div class="bar-v" id="bTotal" style="color:var(--gold)">€0.00</div><div class="bar-l">List Total</div></div>
+    <div><div class="bar-v" id="bSaved" style="color:var(--blue)">€0.00</div><div class="bar-l">Saved</div></div>
+  </div>
+</div>
+
+<!-- Price modal -->
+<div class="overlay" id="ovPrice" onclick="bgClose(event,'ovPrice')">
+  <div class="modal">
+    <h3>💶 Update Price</h3>
+    <p id="priceP">Enter the real price you paid</p>
+    <div class="field"><div class="flbl">Price (€)</div><input class="finput num green" type="number" id="priceI" step="0.01" min="0" placeholder="0.00"></div>
+    <div class="mbtns"><button class="mbtn cancel" onclick="close('ovPrice')">Cancel</button><button class="mbtn ok-green" onclick="savePrice()">✓ Save</button></div>
+  </div>
+</div>
+
+<!-- Name modal -->
+<div class="overlay" id="ovName" onclick="bgClose(event,'ovName')">
+  <div class="modal">
+    <h3>✏️ Rename</h3>
+    <p id="nameP">Update the product name</p>
+    <div class="field"><div class="flbl">Name</div><input class="finput blue" type="text" id="nameI" placeholder="Product name..."></div>
+    <div class="mbtns"><button class="mbtn cancel" onclick="close('ovName')">Cancel</button><button class="mbtn ok-blue" onclick="saveName()">✓ Save</button></div>
+  </div>
+</div>
+
+<!-- Store modal -->
+<div class="overlay" id="ovStore" onclick="bgClose(event,'ovStore')">
+  <div class="modal">
+    <h3>🏪 Change Store</h3>
+    <p id="storeP">Pick where this item is cheaper</p>
+    <div class="field"><div class="flbl">Store</div>
+      <select class="finput purple" id="storeI">
+        <option value="a">Aldi</option><option value="l">Lidl</option>
+        <option value="k">Kaufland</option><option value="e">Edeka</option>
+        <option value="n">Netto</option><option value="f">Frankfurt (Oder)</option>
+        <option value="any">Any Store</option><option value="c">Other (type below)</option>
+      </select>
+    </div>
+    <div class="field" id="storeCustomF" style="display:none"><div class="flbl">Custom store name</div><input class="finput purple" type="text" id="storeCI" placeholder="e.g. Turkish Shop Bahnhofstr."></div>
+    <div class="mbtns"><button class="mbtn cancel" onclick="close('ovStore')">Cancel</button><button class="mbtn ok-purple" onclick="saveStore()">✓ Save</button></div>
+  </div>
+</div>
+
+<!-- Add modal -->
+<div class="overlay" id="ovAdd" onclick="bgClose(event,'ovAdd')">
+  <div class="modal">
+    <h3>➕ Add Product</h3>
+    <p>Adding to <strong>Week <span id="addWkN">1</span></strong></p>
+    <div class="field"><div class="flbl">Product Name</div><input class="finput blue" type="text" id="addName" placeholder="e.g. Greek Yoghurt 500g"></div>
+    <div class="field"><div class="flbl">Price (€)</div><input class="finput green" type="number" id="addPrice" step="0.01" min="0" placeholder="0.00"></div>
+    <div class="field"><div class="flbl">Category</div>
+      <select class="finput" id="addCat">
+        <option value="🥩 Protein (Halal)">🥩 Protein (Halal)</option>
+        <option value="🌾 Grains & Carbs">🌾 Grains &amp; Carbs</option>
+        <option value="🫘 Legumes">🫘 Legumes</option>
+        <option value="🥦 Vegetables & Fruit">🥦 Vegetables &amp; Fruit</option>
+        <option value="🥛 Dairy">🥛 Dairy</option>
+        <option value="🧂 Pantry">🧂 Pantry</option>
+        <option value="🍫 Brain & Mood">🍫 Brain &amp; Mood</option>
+        <option value="📝 Added Items">📝 Added Items</option>
+        <option value="__custom">✏️ Custom...</option>
+      </select>
+    </div>
+    <div class="field" id="addCatCF" style="display:none"><div class="flbl">Custom category</div><input class="finput" type="text" id="addCatC" placeholder="e.g. 🍵 Drinks"></div>
+    <div class="field"><div class="flbl">Store</div>
+      <select class="finput purple" id="addStore">
+        <option value="a">Aldi</option><option value="l">Lidl</option>
+        <option value="k">Kaufland</option><option value="e">Edeka</option>
+        <option value="n">Netto</option><option value="f">Frankfurt (Oder)</option>
+        <option value="any">Any Store</option><option value="c">Other</option>
+      </select>
+    </div>
+    <div class="field" id="addStoreCF" style="display:none"><div class="flbl">Custom store</div><input class="finput purple" type="text" id="addStoreC" placeholder="Store name"></div>
+    <div class="mbtns"><button class="mbtn cancel" onclick="close('ovAdd')">Cancel</button><button class="mbtn ok-green" onclick="doAdd()">➕ Add</button></div>
+  </div>
+</div>
+
+<!-- Remove modal -->
+<div class="overlay" id="ovRemove" onclick="bgClose(event,'ovRemove')">
+  <div class="modal">
+    <h3>🗑️ Remove Item?</h3>
+    <p id="removeP">This will delete the item from the list.</p>
+    <div class="mbtns"><button class="mbtn cancel" onclick="close('ovRemove')">Keep It</button><button class="mbtn ok-red" onclick="doRemove()">🗑️ Remove</button></div>
+  </div>
+</div>
+
+<!-- Save modal -->
+<div class="overlay" id="ovSave" onclick="bgClose(event,'ovSave')">
+  <div class="modal">
+    <h3>💾 Save & Restore</h3>
+    <p>Your data auto-saves in this browser. Use the code below to restore on a different device.</p>
+    <div class="field"><div class="flbl">Your save code (copy this)</div><textarea class="finput" id="saveOut" readonly></textarea></div>
+    <div class="field"><div class="flbl">Paste code to restore</div><textarea class="finput" id="saveIn" placeholder="Paste code here..."></textarea></div>
+    <div class="mbtns"><button class="mbtn cancel" onclick="close('ovSave')">Close</button><button class="mbtn ok-green" onclick="doLoad()">⬆️ Restore</button></div>
+  </div>
+</div>
+
+<script>
+// ── STORE MAP ──
+const SM={
+  a:{l:'Aldi',c:'sa'},l:{l:'Lidl',c:'sl'},k:{l:'Kaufland',c:'sk'},
+  e:{l:'Edeka',c:'se'},n:{l:'Netto',c:'sn'},f:{l:'Frankfurt Oder',c:'sf'},
+  any:{l:'Any Store',c:'sany'},c:{l:'Other',c:'sc'}
+};
+
+// ── BUILT-IN DATA ──
+const BI={
+  1:[
+    {cat:'🥩 Protein (Halal)',items:[
+      {id:'1-1',n:'Halal Chicken Breast 500g',p:3.49,s:'k'},
+      {id:'1-2',n:'Halal Minced Meat 400g',p:2.99,s:'k'},
+      {id:'1-3',n:'Eggs 10-pack',p:1.89,s:'a'},
+      {id:'1-4',n:'Tuna in Water 2×185g',p:1.19,s:'l'},
+    ]},
+    {cat:'🌾 Grains & Carbs',items:[
+      {id:'1-5',n:'Basmati Rice 1kg',p:1.49,s:'k'},
+      {id:'1-6',n:'Oats 500g',p:0.59,s:'a'},
+      {id:'1-7',n:'Wholegrain Bread 500g',p:1.29,s:'e'},
+      {id:'1-8',n:'Pasta 500g',p:0.79,s:'a'},
+    ]},
+    {cat:'🫘 Legumes',items:[
+      {id:'1-9',n:'Red Lentils 500g',p:0.99,s:'e'},
+      {id:'1-10',n:'Chickpeas (can) 400g',p:0.79,s:'l'},
+    ]},
+    {cat:'🥦 Vegetables & Fruit',items:[
+      {id:'1-11',n:'Bananas 1kg',p:0.79,s:'a'},
+      {id:'1-12',n:'Apples 1kg',p:1.29,s:'l'},
+      {id:'1-13',n:'Tomatoes 500g',p:0.99,s:'n'},
+      {id:'1-14',n:'Onions 1kg',p:0.69,s:'a'},
+      {id:'1-15',n:'Carrots 1kg',p:0.79,s:'a'},
+      {id:'1-16',n:'Frozen Spinach 450g',p:0.99,s:'l'},
+      {id:'1-17',n:'Garlic (bulb)',p:0.49,s:'a'},
+      {id:'1-18',n:'Lemon 2×',p:0.49,s:'n'},
+    ]},
+    {cat:'🥛 Dairy',items:[
+      {id:'1-19',n:'Full-fat Milk 1L',p:0.95,s:'a'},
+      {id:'1-20',n:'Yoghurt 500g',p:0.79,s:'a'},
+    ]},
+    {cat:'🧂 Pantry (lasts all month!)',items:[
+      {id:'1-21',n:'Sunflower Oil 750ml',p:1.49,s:'a'},
+      {id:'1-22',n:'Peanut Butter 250g',p:1.49,s:'k'},
+      {id:'1-23',n:'Garam Masala',p:1.29,s:'e'},
+      {id:'1-24',n:'Turmeric',p:0.89,s:'e'},
+      {id:'1-25',n:'Cumin / Jeera',p:0.89,s:'e'},
+      {id:'1-26',n:'Paprika Powder',p:0.69,s:'n'},
+      {id:'1-27',n:'Black Tea 20 bags',p:0.89,s:'any'},
+    ]},
+    {cat:'🍫 Brain & Mood',items:[
+      {id:'1-28',n:'Walnuts 150g',p:1.49,s:'l'},
+      {id:'1-29',n:'Dark Chocolate 85% 100g',p:0.99,s:'a'},
+    ]},
+  ],
+  2:[
+    {cat:'🥩 Protein (Halal)',items:[
+      {id:'2-1',n:'Halal Chicken Breast 500g',p:3.49,s:'k'},
+      {id:'2-2',n:'Eggs 10-pack',p:1.89,s:'a'},
+      {id:'2-3',n:'Tuna in Water 2×185g',p:1.19,s:'l'},
+    ]},
+    {cat:'🌾 Grains & Carbs',items:[
+      {id:'2-4',n:'Basmati Rice 1kg',p:1.49,s:'k'},
+      {id:'2-5',n:'Oats 500g',p:0.59,s:'a'},
+      {id:'2-6',n:'Wholegrain Bread 500g',p:1.29,s:'e'},
+    ]},
+    {cat:'🫘 Legumes',items:[
+      {id:'2-7',n:'Red Lentils 500g',p:0.99,s:'e'},
+      {id:'2-8',n:'Chickpeas (can) 400g',p:0.79,s:'l'},
+    ]},
+    {cat:'🥦 Vegetables & Fruit',items:[
+      {id:'2-9',n:'Bananas 1kg',p:0.79,s:'a'},
+      {id:'2-10',n:'Apples 1kg',p:1.29,s:'l'},
+      {id:'2-11',n:'Tomatoes 500g',p:0.99,s:'n'},
+      {id:'2-12',n:'Onions 1kg',p:0.69,s:'a'},
+      {id:'2-13',n:'Carrots 1kg',p:0.79,s:'a'},
+      {id:'2-14',n:'Frozen Spinach 450g',p:0.99,s:'l'},
+      {id:'2-15',n:'Garlic (bulb)',p:0.49,s:'a'},
+      {id:'2-16',n:'Lemon 2×',p:0.49,s:'n'},
+    ]},
+    {cat:'🥛 Dairy',items:[
+      {id:'2-17',n:'Full-fat Milk 1L',p:0.95,s:'a'},
+      {id:'2-18',n:'Yoghurt 500g',p:0.79,s:'a'},
+    ]},
+    {cat:'🍫 Brain & Mood',items:[
+      {id:'2-19',n:'Walnuts 150g',p:1.49,s:'l'},
+      {id:'2-20',n:'Dark Chocolate 85% 100g',p:0.99,s:'a'},
+    ]},
+  ],
+  3:[
+    {cat:'🥩 Protein (Halal)',items:[
+      {id:'3-1',n:'Halal Minced Meat 400g',p:2.99,s:'k'},
+      {id:'3-2',n:'Eggs 10-pack',p:1.89,s:'a'},
+      {id:'3-3',n:'Tuna in Water 2×185g',p:1.19,s:'l'},
+    ]},
+    {cat:'🌾 Grains & Carbs',items:[
+      {id:'3-4',n:'Basmati Rice 1kg',p:1.49,s:'k'},
+      {id:'3-5',n:'Oats 500g',p:0.59,s:'a'},
+      {id:'3-6',n:'Wholegrain Bread 500g',p:1.29,s:'e'},
+      {id:'3-7',n:'Pasta 500g',p:0.79,s:'a'},
+    ]},
+    {cat:'🫘 Legumes',items:[
+      {id:'3-8',n:'Red Lentils 500g',p:0.99,s:'e'},
+      {id:'3-9',n:'Chickpeas (can) 400g',p:0.79,s:'l'},
+    ]},
+    {cat:'🥦 Vegetables & Fruit',items:[
+      {id:'3-10',n:'Bananas 1kg',p:0.79,s:'a'},
+      {id:'3-11',n:'Apples 1kg',p:1.29,s:'l'},
+      {id:'3-12',n:'Tomatoes 500g',p:0.99,s:'n'},
+      {id:'3-13',n:'Onions 1kg',p:0.69,s:'a'},
+      {id:'3-14',n:'Carrots 1kg',p:0.79,s:'a'},
+      {id:'3-15',n:'Frozen Spinach 450g',p:0.99,s:'l'},
+      {id:'3-16',n:'Garlic (bulb)',p:0.49,s:'a'},
+      {id:'3-17',n:'Lemon 2×',p:0.49,s:'n'},
+    ]},
+    {cat:'🥛 Dairy',items:[
+      {id:'3-18',n:'Full-fat Milk 1L',p:0.95,s:'a'},
+      {id:'3-19',n:'Yoghurt 500g',p:0.79,s:'a'},
+    ]},
+    {cat:'🧂 Pantry (if running low)',items:[
+      {id:'3-20',n:'Sunflower Oil (if low)',p:1.49,s:'a'},
+      {id:'3-21',n:'Peanut Butter (if low)',p:1.49,s:'k'},
+    ]},
+    {cat:'🍫 Brain & Mood',items:[
+      {id:'3-22',n:'Walnuts 150g',p:1.49,s:'l'},
+      {id:'3-23',n:'Dark Chocolate 85% 100g',p:0.99,s:'a'},
+    ]},
+  ],
+  4:[
+    {cat:'🥩 Protein (Halal)',items:[
+      {id:'4-1',n:'Halal Chicken Breast 500g',p:3.49,s:'k'},
+      {id:'4-2',n:'Eggs 10-pack',p:1.89,s:'a'},
+      {id:'4-3',n:'Tuna in Water 2×185g',p:1.19,s:'l'},
+    ]},
+    {cat:'🌾 Grains & Carbs',items:[
+      {id:'4-4',n:'Basmati Rice 1kg',p:1.49,s:'k'},
+      {id:'4-5',n:'Oats 500g',p:0.59,s:'a'},
+      {id:'4-6',n:'Wholegrain Bread 500g',p:1.29,s:'e'},
+    ]},
+    {cat:'🫘 Legumes',items:[
+      {id:'4-7',n:'Red Lentils 500g',p:0.99,s:'e'},
+      {id:'4-8',n:'Chickpeas (can) 400g',p:0.79,s:'l'},
+    ]},
+    {cat:'🥦 Vegetables & Fruit',items:[
+      {id:'4-9',n:'Bananas 1kg',p:0.79,s:'a'},
+      {id:'4-10',n:'Apples 1kg',p:1.29,s:'l'},
+      {id:'4-11',n:'Tomatoes 500g',p:0.99,s:'n'},
+      {id:'4-12',n:'Onions 1kg',p:0.69,s:'a'},
+      {id:'4-13',n:'Carrots 1kg',p:0.79,s:'a'},
+      {id:'4-14',n:'Frozen Spinach 450g',p:0.99,s:'l'},
+      {id:'4-15',n:'Garlic (bulb)',p:0.49,s:'a'},
+      {id:'4-16',n:'Lemon 2×',p:0.49,s:'n'},
+    ]},
+    {cat:'🥛 Dairy',items:[
+      {id:'4-17',n:'Full-fat Milk 1L',p:0.95,s:'a'},
+      {id:'4-18',n:'Yoghurt 500g',p:0.79,s:'a'},
+    ]},
+    {cat:'🎉 End-of-Month Treat',items:[
+      {id:'4-19',n:'Walnuts 150g',p:1.49,s:'l'},
+      {id:'4-20',n:'Dark Chocolate 85% 100g',p:0.99,s:'a'},
+      {id:'4-21',n:'🎁 Halva / Baklava (treat!)',p:1.50,s:'f'},
+    ]},
+  ],
+};
+
+const NOTES={
+  1:'💡 <strong>Foundation Week</strong> — Buy spices, oil & peanut butter. They last all month!',
+  2:'💡 <strong>Restock Week</strong> — Oil, spices & peanut butter carry over from Week 1.',
+  3:'💡 <strong>Mid-Month</strong> — Mince instead of chicken for variety! Check pantry levels.',
+  4:'🎉 <strong>End Strong!</strong> — Lightest week. Use savings for a halal treat!',
+};
+
+// ── STATE ──
+let CW=1, AID=null, RWK=null;
+let ST={chk:{},price:{},name:{},store:{},custom:{1:[],2:[],3:[],4:[]}};
+let REM={1:[],2:[],3:[],4:[]};
+
+// ── LOCALSTORAGE ──
+function saveLS(){
+  try{
+    const d={ST,REM:Object.fromEntries(Object.entries(REM).map(([k,v])=>[k,[...v]]))};
+    localStorage.setItem('halal_tracker_v3',JSON.stringify(d));
+  }catch(e){}
+}
+function loadLS(){
+  try{
+    const raw=localStorage.getItem('halal_tracker_v3');
+    if(!raw)return;
+    const d=JSON.parse(raw);
+    ST=d.ST||ST;
+    if(d.REM){Object.entries(d.REM).forEach(([k,v])=>{REM[k]=new Set(v);});}
+    else{[1,2,3,4].forEach(w=>{REM[w]=new Set(REM[w]||[]);});}
+  }catch(e){[1,2,3,4].forEach(w=>{REM[w]=new Set();});}
+}
+
+// ── HELPERS ──
+function gp(id,def){return ST.price[id]!==undefined?ST.price[id]:def;}
+function gn(id,def){return ST.name[id]||def;}
+function gs(id,def){return ST.store[id]||(SM[def]?{k:def,...SM[def]}:{k:'any',l:'Any',c:'sany'});}
+function storeObj(k,custom=''){
+  if(k==='c'||k==='custom')return{k:'c',l:custom||'Other',c:'sc'};
+  return{k,l:SM[k]?.l||k,c:SM[k]?.c||'sany'};
+}
+
+// ── RENDER ──
+function render(){
+  const con=document.getElementById('panels');
+  con.innerHTML='';
+  [1,2,3,4].forEach(w=>{
+    const div=document.createElement('div');
+    div.id='p'+w;
+    div.style.display=w===CW?'block':'none';
+    const note=document.createElement('div');
+    note.className='cat-hd';
+    note.innerHTML=NOTES[w];
+    note.style.cssText='background:var(--odim);border:1px solid rgba(251,191,36,.35);border-radius:10px;padding:.52rem .8rem;font-size:.75rem;color:var(--gold);letter-spacing:0;text-transform:none;border-bottom:none;margin-bottom:.65rem;line-height:1.45;';
+    div.appendChild(note);
+
+    BI[w].forEach(cat=>{
+      const vis=cat.items.filter(i=>!REM[w].has(i.id));
+      if(!vis.length)return;
+      const hd=document.createElement('div');
+      hd.className='cat-hd';hd.textContent=cat.cat;
+      div.appendChild(hd);
+      vis.forEach(item=>{div.appendChild(mkItem(item,w));});
+    });
+
+    // Custom items grouped by category
+    const grps={};
+    (ST.custom[w]||[]).forEach(i=>{const c=i.cat||'📝 Added Items';if(!grps[c])grps[c]=[];grps[c].push(i);});
+    Object.entries(grps).forEach(([cat,items])=>{
+      const hd=document.createElement('div');
+      hd.className='cat-hd';hd.textContent=cat;
+      div.appendChild(hd);
+      items.forEach(item=>{div.appendChild(mkItem(item,w));});
+    });
+
+    con.appendChild(div);
+  });
+  updateUI();
+}
+
+function mkItem(item,w){
+  const id=item.id,dp=item.p||item.price||0;
+  const n=gn(id,item.n||item.name||'Item');
+  const p=gp(id,dp);
+  const so=gs(id,item.s||item.sk||'any');
+  const chk=!!ST.chk[id];
+
+  const el=document.createElement('div');
+  el.className='item'+(chk?' done':'');
+  el.dataset.id=id;el.dataset.dp=dp;
+  el.innerHTML=`
+    <button class="chk${chk?' on':''}" onclick="tick('${id}')">${chk?'✓':''}</button>
+    <div>
+      <div class="iname">${n}</div>
+      <div class="imeta">
+        <span class="stag ${so.c}" onclick="openStore('${id}')">${so.l}</span>
+      </div>
+    </div>
+    <div class="iright">
+      <span class="iprice" onclick="openPrice('${id}')">€${p.toFixed(2)}</span>
+      <div class="ibtns">
+        <button class="ibtn ip" onclick="openPrice('${id}')">€</button>
+        <button class="ibtn in" onclick="openName('${id}')">✏️</button>
+        <button class="ibtn is" onclick="openStore('${id}')">🏪</button>
+        <button class="ibtn ir" onclick="openRem('${id}',${w})">🗑️</button>
+      </div>
+    </div>`;
+  return el;
+}
+
+// ── UI UPDATE ──
+function updateUI(){
+  // Weekly
+  let wList=0,wTick=0,wN=0;
+  const wCards=document.querySelectorAll(`#p${CW} .item`);
+  wCards.forEach(el=>{
+    const id=el.dataset.id,p=gp(id,parseFloat(el.dataset.dp||0));
+    wList+=p;if(ST.chk[id]){wTick+=p;wN++;}
+  });
+  document.getElementById('wkN').textContent=CW;
+  document.getElementById('wSp').textContent='€'+wTick.toFixed(2);
+  const wR=25-wTick;
+  document.getElementById('wLf').textContent='€'+Math.max(wR,0).toFixed(2);
+  document.getElementById('wLf').style.color=wR<0?'var(--red)':'var(--green)';
+  const pf=document.getElementById('pFill');
+  pf.style.width=Math.min(wTick/25*100,100)+'%';
+  pf.classList.toggle('over',wTick>25);
+  const wc=document.getElementById('wChip');
+  if(!wN){wc.className='w-chip';wc.textContent='💰 Tick items to track spending';}
+  else if(wR>0){wc.className='w-chip';wc.innerHTML=`✅ <strong>€${wR.toFixed(2)}</strong> left this week — free for extras!`;}
+  else if(wR===0){wc.className='w-chip warn';wc.textContent='⚖️ Exactly on budget — perfect!';}
+  else{wc.className='w-chip bad';wc.innerHTML=`⚠️ Over by <strong>€${Math.abs(wR).toFixed(2)}</strong> — skip optional items`;}
+  document.getElementById('bTick').textContent=wN+'/'+wCards.length;
+  document.getElementById('bTotal').textContent='€'+wList.toFixed(2);
+  document.getElementById('bSaved').textContent='€'+Math.max(wList-wTick,0).toFixed(2);
+
+  // Monthly
+  let mTotal=0;
+  [1,2,3,4].forEach(w=>{
+    let ws=0;
+    document.querySelectorAll(`#p${w} .item`).forEach(el=>{
+      const id=el.dataset.id;if(ST.chk[id])ws+=gp(id,parseFloat(el.dataset.dp||0));
+    });
+    const pct=Math.min(ws/25*100,100);
+    document.getElementById('sf'+w).style.width=pct+'%';
+    document.getElementById('sf'+w).classList.toggle('over',ws>25);
+    const sp=document.getElementById('ws'+w);
+    sp.textContent='€'+ws.toFixed(2);
+    sp.style.color=ws>25?'var(--red)':ws>0?'var(--gold)':'var(--green)';
+    const lr=25-ws;
+    const rd=document.getElementById('wr'+w);
+    rd.textContent=lr>=0?`€${lr.toFixed(2)} left`:`€${Math.abs(lr).toFixed(2)} over`;
+    rd.style.color=lr<0?'var(--red)':'var(--muted)';
+    document.getElementById('wm'+w).classList.toggle('on',w===CW);
+    mTotal+=ws;
+  });
+  document.getElementById('mSp').textContent='€'+mTotal.toFixed(2);
+  const mr=100-mTotal;
+  document.getElementById('mLf').textContent='€'+Math.max(mr,0).toFixed(2);
+  document.getElementById('mLf').style.color=mr<0?'var(--red)':'var(--green)';
+  const mc=document.getElementById('mChip');
+  if(mTotal===0){mc.className='m-chip';mc.innerHTML='💡 Tick items across all weeks to build your monthly picture.';}
+  else if(mr>10){mc.className='m-chip good';mc.innerHTML=`🎉 Great pacing! <strong>€${mr.toFixed(2)}</strong> remaining — you could treat yourself!`;}
+  else if(mr>=0){mc.className='m-chip warn';mc.innerHTML=`⚠️ Getting close — <strong>€${mr.toFixed(2)}</strong> left this month.`;}
+  else{mc.className='m-chip bad';mc.innerHTML=`🚨 Over monthly budget by <strong>€${Math.abs(mr).toFixed(2)}</strong>!`;}
+
+  saveLS();
+}
+
+// ── NAVIGATION ──
+function go(w){
+  CW=w;
+  // Tabs
+  document.querySelectorAll('.tab').forEach((t,i)=>{
+    t.classList.toggle('on', i<4?(i+1===w):w==='meal');
+  });
+  // Show/hide sections
+  const isMeal=w==='meal';
+  document.getElementById('mCard').style.display=isMeal?'none':'';
+  document.getElementById('wCard').style.display=isMeal?'none':'';
+  document.getElementById('acts').style.display=isMeal?'none':'';
+  document.getElementById('mpMain').classList.toggle('on',isMeal);
+  // Show right panel
+  [1,2,3,4].forEach(n=>{
+    const p=document.getElementById('p'+n);
+    if(p)p.style.display=(!isMeal&&n===w)?'block':'none';
+  });
+  if(!isMeal)updateUI();
+}
+
+// ── TICK ──
+function tick(id){
+  ST.chk[id]=!ST.chk[id];
+  const el=document.querySelector(`.item[data-id="${id}"]`);
+  if(el){
+    const on=ST.chk[id];
+    el.classList.toggle('done',on);
+    const b=el.querySelector('.chk');
+    b.classList.toggle('on',on);b.textContent=on?'✓':'';
+    const nm=el.querySelector('.iname');
+    if(nm)nm.style.textDecoration=on?'line-through':'none';
+  }
+  updateUI();
+}
+
+function checkAll(){document.querySelectorAll(`#p${CW} .item`).forEach(e=>{ST.chk[e.dataset.id]=true;});render();go(CW);}
+function uncheckAll(){document.querySelectorAll(`#p${CW} .item`).forEach(e=>{ST.chk[e.dataset.id]=false;});render();go(CW);}
+function resetWk(){document.querySelectorAll(`#p${CW} .item`).forEach(e=>{const id=e.dataset.id;ST.chk[id]=false;delete ST.price[id];delete ST.name[id];delete ST.store[id];});render();go(CW);}
+
+// ── MODALS ──
+function open(id){document.getElementById(id).classList.add('on');}
+function close(id){document.getElementById(id).classList.remove('on');AID=null;}
+function bgClose(e,id){if(e.target===document.getElementById(id))close(id);}
+
+// Price
+function openPrice(id){
+  AID=id;
+  const el=document.querySelector(`.item[data-id="${id}"]`);
+  const cur=gp(id,parseFloat(el?.dataset.dp||0));
+  document.getElementById('priceP').textContent=(ST.name[id]||el?.querySelector('.iname')?.textContent||id)+' — enter price you paid:';
+  document.getElementById('priceI').value=cur.toFixed(2);
+  open('ovPrice');
+  setTimeout(()=>document.getElementById('priceI').select(),100);
+}
+function savePrice(){
+  const v=parseFloat(document.getElementById('priceI').value);
+  if(isNaN(v)||v<0)return;
+  ST.price[AID]=v;
+  const el=document.querySelector(`.item[data-id="${AID}"]`);
+  if(el){const d=el.querySelector('.iprice');if(d)d.textContent='€'+v.toFixed(2);}
+  close('ovPrice');updateUI();
+}
+
+// Name
+function openName(id){
+  AID=id;
+  const el=document.querySelector(`.item[data-id="${id}"]`);
+  document.getElementById('nameP').textContent='Rename: '+(ST.name[id]||el?.querySelector('.iname')?.textContent||id);
+  document.getElementById('nameI').value=ST.name[id]||el?.querySelector('.iname')?.textContent||'';
+  open('ovName');
+  setTimeout(()=>document.getElementById('nameI').select(),100);
+}
+function saveName(){
+  const v=document.getElementById('nameI').value.trim();if(!v)return;
+  ST.name[AID]=v;
+  const el=document.querySelector(`.item[data-id="${AID}"]`);
+  if(el){const nm=el.querySelector('.iname');if(nm)nm.textContent=v;}
+  close('ovName');saveLS();
+}
+
+// Store
+document.getElementById('storeI').addEventListener('change',function(){
+  document.getElementById('storeCustomF').style.display=this.value==='c'?'block':'none';
+});
+function openStore(id){
+  AID=id;
+  const so=gs(id,'any');
+  const el=document.querySelector(`.item[data-id="${id}"]`);
+  document.getElementById('storeP').textContent='Change store for: '+(ST.name[id]||el?.querySelector('.iname')?.textContent||id);
+  document.getElementById('storeI').value=so.k in SM?so.k:'c';
+  document.getElementById('storeCustomF').style.display=so.k==='c'?'block':'none';
+  if(so.k==='c')document.getElementById('storeCI').value=so.l;
+  open('ovStore');
+}
+function saveStore(){
+  const k=document.getElementById('storeI').value;
+  const customL=document.getElementById('storeCI').value.trim();
+  const so=storeObj(k,customL);
+  ST.store[AID]=so;
+  const el=document.querySelector(`.item[data-id="${AID}"]`);
+  if(el){const t=el.querySelector('.stag');if(t){t.className='stag '+so.c;t.textContent=so.l;}}
+  close('ovStore');saveLS();
+}
+
+// Add
+document.getElementById('addCat').addEventListener('change',function(){
+  document.getElementById('addCatCF').style.display=this.value==='__custom'?'block':'none';
+});
+document.getElementById('addStore').addEventListener('change',function(){
+  document.getElementById('addStoreCF').style.display=this.value==='c'?'block':'none';
+});
+function openAdd(){
+  document.getElementById('addWkN').textContent=CW;
+  document.getElementById('addName').value='';
+  document.getElementById('addPrice').value='';
+  document.getElementById('addCat').value='📝 Added Items';
+  document.getElementById('addCatCF').style.display='none';
+  document.getElementById('addStore').value='a';
+  document.getElementById('addStoreCF').style.display='none';
+  open('ovAdd');
+  setTimeout(()=>document.getElementById('addName').focus(),100);
+}
+function doAdd(){
+  const name=document.getElementById('addName').value.trim();if(!name)return;
+  const price=parseFloat(document.getElementById('addPrice').value)||0;
+  const catSel=document.getElementById('addCat').value;
+  const cat=catSel==='__custom'?(document.getElementById('addCatC').value.trim()||'📝 Added Items'):catSel;
+  const sk=document.getElementById('addStore').value;
+  const scl=document.getElementById('addStoreC').value.trim();
+  const id='x'+Date.now();
+  ST.custom[CW].push({id,n:name,p:price,cat,s:sk,sl:scl});
+  close('ovAdd');render();go(CW);
+}
+
+// Remove
+function openRem(id,w){
+  AID=id;RWK=w;
+  const el=document.querySelector(`.item[data-id="${id}"]`);
+  document.getElementById('removeP').textContent='Remove: '+(ST.name[id]||el?.querySelector('.iname')?.textContent||id)+'?';
+  open('ovRemove');
+}
+function doRemove(){
+  // Is it built-in?
+  let bi=false;
+  BI[RWK]?.forEach(cat=>{if(cat.items.find(i=>i.id===AID))bi=true;});
+  if(bi){if(!REM[RWK])REM[RWK]=new Set();REM[RWK].add(AID);}
+  else{ST.custom[RWK]=(ST.custom[RWK]||[]).filter(i=>i.id!==AID);}
+  delete ST.chk[AID];delete ST.price[AID];delete ST.name[AID];delete ST.store[AID];
+  close('ovRemove');render();go(CW);
+}
+
+// Save/Load
+function openSave(){
+  const d={ST,REM:Object.fromEntries(Object.entries(REM).map(([k,v])=>[k,[...v]]))};
+  const enc=btoa(unescape(encodeURIComponent(JSON.stringify(d))));
+  document.getElementById('saveOut').value=enc;
+  document.getElementById('saveIn').value='';
+  open('ovSave');
+  setTimeout(()=>{const a=document.getElementById('saveOut');a.select();try{document.execCommand('copy');}catch(e){}},150);
+}
+function doLoad(){
+  try{
+    const raw=document.getElementById('saveIn').value.trim();if(!raw)return;
+    const d=JSON.parse(decodeURIComponent(escape(atob(raw))));
+    ST=d.ST;
+    [1,2,3,4].forEach(w=>{REM[w]=new Set((d.REM&&d.REM[w])||[]);});
+    close('ovSave');render();go(CW);
+  }catch(e){alert('Invalid save code.');}
+}
+
+// ── MEAL PLAN ──
+function getTicked(){
+  const items=[],seen=new Set();
+  [1,2,3,4].forEach(w=>{
+    BI[w].forEach(cat=>{
+      cat.items.forEach(i=>{
+        if(ST.chk[i.id]&&(!REM[w]||!REM[w].has(i.id))){
+          const k=(ST.name[i.id]||i.n).toLowerCase();
+          if(!seen.has(k)){seen.add(k);items.push({id:i.id,n:ST.name[i.id]||i.n,cat:cat.cat});}
+        }
+      });
+    });
+    (ST.custom[w]||[]).forEach(i=>{
+      if(ST.chk[i.id]){
+        const k=(ST.name[i.id]||i.n).toLowerCase();
+        if(!seen.has(k)){seen.add(k);items.push({id:i.id,n:ST.name[i.id]||i.n,cat:i.cat||''});}
+      }
+    });
+  });
+  return items;
+}
+
+function has(ing,kws){return kws.some(k=>ing.some(i=>i.n.toLowerCase().includes(k)));}
+
+function genMeal(){
+  const ing=getTicked();
+  const body=document.getElementById('mpBody');
+  if(!ing.length){
+    body.innerHTML='<div class="mp-empty"><strong>No items ticked!</strong>Go to any week tab, tick items you bought, then tap ⚡ Generate.</div>';
+    return;
+  }
+
+  const hC=has(ing,['chicken','hühner']);
+  const hM=has(ing,['mince','minced','hack','keema']);
+  const hT=has(ing,['tuna','thunfisch']);
+  const hE=has(ing,['egg','eier','eggs']);
+  const hL=has(ing,['lentil','linsen','dal']);
+  const hCh=has(ing,['chickpea','kichererbsen','chana']);
+  const hR=has(ing,['rice','reis','basmati']);
+  const hBr=has(ing,['bread','brot']);
+  const hPa=has(ing,['pasta','nudel']);
+  const hO=has(ing,['oat','haferflocken']);
+  const hMi=has(ing,['milk','milch','vollmilch']);
+  const hY=has(ing,['yoghurt','joghurt','yogurt']);
+  const hBn=has(ing,['banana','banane']);
+  const hAp=has(ing,['apple','apfel']);
+  const hTo=has(ing,['tomato','tomate']);
+  const hOn=has(ing,['onion','zwiebel']);
+  const hGa=has(ing,['garlic','knoblauch']);
+  const hCa=has(ing,['carrot','karotte']);
+  const hSp=has(ing,['spinach','spinat']);
+  const hW=has(ing,['walnut','walnuss']);
+  const hCo=has(ing,['chocolate','schokolade']);
+  const hPb=has(ing,['peanut','erdnuss']);
+  const hSc=has(ing,['garam','masala','cumin','jeera','turmeric','kurkuma','paprika']);
+  const hLe=has(ing,['lemon','zitrone']);
+
+  const P=t=>`<span class="mt mtp">${t}</span>`;
+  const B=t=>`<span class="mt mtb">${t}</span>`;
+  const E=t=>`<span class="mt mte">${t}</span>`;
+  const H=t=>`<span class="mt mth">${t}</span>`;
+  const m=(lbl,name,desc,tags)=>`
+    <div class="meal">
+      <div class="meal-row">
+        <span class="meal-lbl">${lbl}</span>
+        <div>
+          <div class="meal-name">${name}</div>
+          <div class="meal-desc">${desc}</div>
+          <div class="meal-tags">${tags.join('')}</div>
+        </div>
+      </div>
+    </div>`;
+
+  const days=[
+    {name:'Monday',c:'c0',meals:[
+      m('🌅 Breakfast',
+        hO&&hMi?'Masala Oats'+(hBn?' + Banana':''):hE&&hBr?'Spiced Egg Toast':'Bread & Tea',
+        hO?`Oats + milk${hBn?' + banana':''} + cardamom`:hE?'Scrambled eggs + spices + bread':'Bread + peanut butter + tea',
+        [E('Energy'),B('Brain')]),
+      m('☀️ Lunch',
+        hL&&hR?'Dal Tadka + Rice':hCh&&hR?'Chana Masala + Rice':'Grain Bowl',
+        hL?`Lentils + ${hOn?'onions + ':''}${hGa?'garlic + ':''}${hSc?'Garam Masala':'spices'}${hR?' + rice':''}`:
+        hCh?`Chickpeas + ${hTo?'tomatoes + ':''}${hSc?'spices':'seasoning'}${hR?' + rice':''}`:
+        'Grains + vegetables + spices',
+        [P('Protein'),E('Energy'),H('Halal ✓')]),
+      m('🌙 Dinner',
+        hE&&hTo?'Egg Bhurji + Bread':hT?'Tuna Stir-fry':'Lentil Soup',
+        hE?`Eggs + ${hTo?'tomatoes + ':''}${hOn?'onions + ':''}spices`:
+        hT?`Tuna + onions + ${hSc?'spices':''} + rice`:
+        `Lentil soup + spices${hLe?' + lemon':''}`,
+        [P('Protein'),E('Fiber')]),
+      m('🍎 Snack',
+        hAp&&hW?'Apple + Walnuts':hBn&&hPb?'Banana + Peanut Butter':hCo?'Dark Chocolate':'Fruit',
+        'Brain-boosting snack for study focus',[B('Omega-3'),E('Energy')]),
+    ]},
+    {name:'Tuesday',c:'c1',meals:[
+      m('🌅 Breakfast',
+        hE&&hBr?'Egg + Bread + Yoghurt':hO&&hBn?'Banana Oat Bowl':'Bread & Tea',
+        hE?`Fried/boiled eggs + bread${hY?' + yoghurt':''}`:hO?'Oats + banana + honey':'Bread + tea',
+        [P('Protein'),E('Energy')]),
+      m('☀️ Lunch',
+        hC&&hR?'Chicken Curry + Rice':hM&&hR?'Keema + Rice':hL&&hR?'Dal + Rice':'Grain Bowl',
+        hC?`Halal chicken + ${hTo?'tomatoes + ':''}${hSc?'Garam Masala + Turmeric':'spices'} + rice`:
+        hM?`Halal mince + ${hCa?'carrots + ':''}${hSc?'spices':'seasoning'} + rice`:
+        `Lentils + vegetables + spices${hR?' + rice':''}`,
+        [P('Protein'),H('Halal ✓'),E('Energy')]),
+      m('🌙 Dinner',
+        hT&&hPa?'Desi Tuna Pasta':hE&&hSp?'Spinach & Egg':'Vegetable Rice',
+        hT&&hPa?`Tuna + pasta + ${hOn?'onions + ':''}${hLe?'lemon':''}`:
+        hE&&hSp?`Spinach + eggs + ${hGa?'garlic + ':''}cumin`:
+        'Rice + vegetables + spices',
+        [P('Protein'),B('Omega-3')]),
+      m('🍌 Snack',
+        hBn&&hPb?'Banana + Peanut Butter':hAp?'Apple':'Tea','Pre-study energy boost',[E('Energy')]),
+    ]},
+    {name:'Wednesday',c:'c2',meals:[
+      m('🌅 Breakfast',
+        hO&&hW&&hY?'Overnight Oats + Walnuts':hO?'Oat Porridge':hE?'Boiled Eggs':'Bread + Tea',
+        hO?`Oats + ${hY?'yoghurt + ':''}${hW?'walnuts + ':''}${hBn?'banana':'honey'}`:
+        hE?'Boiled eggs + tea with milk':'Bread + peanut butter',
+        [B('Brain'),E('Fiber')]),
+      m('☀️ Lunch',
+        hCh&&hTo?'Chana Masala + Rice':hL&&hSp?'Dal + Spinach':'Lentil Bowl',
+        hCh?`Chickpeas + ${hTo?'tomatoes + ':''}Garam Masala${hR?' + rice':''}`:
+        `Lentils + ${hSp?'spinach + ':''}spices${hR?' + rice':''}`,
+        [E('Fiber'),P('Protein'),H('Halal ✓')]),
+      m('🌙 Dinner',
+        hSp&&hE?'Garlic Spinach & Egg':hT?'Tuna Bowl':'Vegetable Soup',
+        hSp&&hE?`Spinach + eggs + ${hGa?'garlic + ':''}cumin`:
+        hT?`Tuna + ${hR?'rice + ':''}${hLe?'lemon':''}`:
+        'Mixed vegetable soup + spices',
+        [P('Protein'),B('Iron')]),
+      m('🍫 Snack',
+        hCo&&hAp?'Dark Chocolate + Apple':hW?'Walnuts':'Tea',
+        'Mood booster + antioxidants for mental health',[B('Mood ↑'),E('Antioxidants')]),
+    ]},
+    {name:'Thursday',c:'c3',meals:[
+      m('🌅 Breakfast',
+        hE&&hBr&&hSc?'Masala Egg Toast':hY&&hBn?'Yoghurt Bowl':'Bread & Tea',
+        hE?`Omelette + ${hOn?'onions + ':''}turmeric + paprika${hBr?' + bread':''}`:
+        hY?`Yoghurt + banana${hPb?' + peanut butter':''}`:
+        'Bread + tea',
+        [P('Protein'),E('Energy')]),
+      m('☀️ Lunch',
+        hM&&hR?'Keema Curry + Rice':hC&&hR?'Chicken Curry + Rice':hL?'Dal + Rice':'Rice Bowl',
+        hM?`Halal mince + ${hOn?'onions + ':''}${hTo?'tomatoes + ':''}Garam Masala + rice`:
+        hC?`Halal chicken + spices + rice`:
+        `Lentils + spices${hR?' + rice':''}`,
+        [P('Protein'),H('Halal ✓'),E('Iron')]),
+      m('🌙 Dinner',
+        hL&&hCa?'Lentil & Carrot Soup':hE&&hSp?'Spinach Egg Bowl':'Vegetable Soup',
+        hL?`Lentils + ${hCa?'carrots + ':''}turmeric${hLe?' + lemon':''}`:
+        hE&&hSp?`Spinach + eggs + ${hGa?'garlic':'seasoning'}`:
+        'Vegetables + spices',
+        [E('Fiber'),E('Energy')]),
+      m('🥕 Snack',
+        hCa&&hPb?'Carrot Sticks + Peanut Butter':hAp?'Apple + Walnuts':'Tea',
+        'Vitamin A + healthy fats',[B('Vitamin A'),E('Energy')]),
+    ]},
+    {name:'Friday 🕌',c:'c4',meals:[
+      m('🌅 Breakfast',
+        hO&&hBn&&hW?'Banana Oat Smoothie Bowl':hE&&hBr?'Egg Toast':'Oat Porridge',
+        hO?`Oats + banana + yoghurt + ${hW?'walnuts':'honey'} — Jumu'ah energy boost! 🎉`:
+        hE?'Eggs + bread — power breakfast':
+        'Oats + honey',
+        [E('Energy'),B('Brain')]),
+      m('☀️ Lunch',
+        hC&&hR&&hSc?'🍚 Chicken Biryani — Friday Special':hM&&hR?'Keema Rice Feast':hL&&hR?'Dal Chawal':'Rice Dish',
+        hC?`Halal chicken + basmati rice + Garam Masala + Turmeric + onions 🎉 Your Friday celebration meal!`:
+        hM?'Halal mince + rice + spices — Friday feast':
+        'Dal + rice — simple and satisfying',
+        [P('Protein'),H('Halal ✓'),E('Energy')]),
+      m('🌙 Dinner',
+        hT&&hBr?'Tuna Salad + Bread':hE?'Light Egg Dish':'Vegetable Bowl',
+        `Light dinner after Jumu'ah lunch — ${hT?'tuna + onions + lemon + bread':hE?'light eggs + vegetables':'vegetables + spices'}`,
+        [P('Protein'),B('Omega-3')]),
+      m('🍫 Snack',
+        hCo&&hW?'Dark Chocolate + Walnuts':'Tea with Snack',
+        "It's Friday — treat yourself! 🎉",[B('Mood ↑')]),
+    ]},
+    {name:'Saturday',c:'c5',meals:[
+      m('🌅 Breakfast',
+        hE&&hBr?'Egg Paratha / Toast':hO?'Oat Porridge':'Bread & Tea',
+        hE?`Eggs + ${hBr?'flatbread + ':''}spices — classic Hyderabadi morning`:
+        `Oats + ${hBn?'banana + ':''}${hY?'yoghurt':'honey'}`,
+        [P('Protein'),E('Energy')]),
+      m('☀️ Lunch',
+        hM&&hPa?'Desi Keema Pasta (Fusion 🇩🇪🇮🇳)':hC&&hR?'Chicken Bowl':hCh&&hSp?'Chana Palak + Rice':'Grain Bowl',
+        hM&&hPa?`Halal mince + pasta + ${hTo?'tomatoes + ':''}Garam Masala — Desi-German fusion!`:
+        hC?`Halal chicken + rice + spices`:
+        `Chickpeas + ${hSp?'spinach + ':''}cumin${hR?' + rice':''}`,
+        [P('Protein'),H('Halal ✓')]),
+      m('🌙 Dinner',
+        hCh&&hSp?'Chana & Spinach Bowl':hL?'Dal + Rice':'Vegetable Rice',
+        hCh?`Chickpeas + ${hSp?'spinach + ':''}${hGa?'garlic + ':''}cumin${hR?' + rice':''}`:
+        `Lentils + spices${hR?' + rice':''}`,
+        [P('Protein'),E('Fiber'),B('Iron')]),
+      m('🍌 Snack',
+        hBn&&hY?'Banana + Yoghurt':hAp?'Apple':'Tea',
+        'Probiotics + potassium — weekend recovery',[E('Gut Health')]),
+    ]},
+    {name:'Sunday',c:'c6',meals:[
+      m('🌅 Breakfast',
+        hO&&hY?'Overnight Oats (prep Saturday night)':hBn&&hMi?'Banana Smoothie':'Bread & Tea',
+        hO?`Oats + yoghurt + ${hBn?'banana + ':''}${hW?'walnuts':'honey'} — zero effort Sunday!`:
+        hBn?'Banana + milk smoothie':
+        `Bread + ${hPb?'peanut butter + ':''}tea`,
+        [E('Energy'),E('Fiber')]),
+      m('☀️ Lunch',
+        hL&&hSp&&hCa?'Mixed Vegetable Dal + Rice':hL&&hR?'Dal + Rice':hCh&&hR?'Chana + Rice':'Grain Bowl',
+        hL?`Lentils + ${hCa?'carrots + ':''}${hSp?'spinach + ':''}${hOn?'onions + ':''}Garam Masala${hR?' + rice':''}`:
+        `Chickpeas + spices${hR?' + rice':''}`,
+        [E('Fiber'),P('Protein'),E('Energy')]),
+      m('🌙 Dinner',
+        hE&&hBr&&hPb?'Egg + Peanut Butter Toast + Apple':hT&&hBr?'Tuna + Bread':'Simple Bowl',
+        hE?'Boiled egg + peanut butter toast + apple':
+        hT?'Tuna + bread':
+        'Leftovers + vegetables',
+        [P('Protein'),E('Energy')]),
+      m('☕ Snack',
+        hMi?'Masala Chai + Dark Chocolate':'Tea + Rest',
+        `Tea${hMi?' + milk + cardamom':''}${hCo?' + dark chocolate squares':''}. Relax, you made it through the week! 🙏`,
+        [B('Mood ↑')]),
+    ]},
+  ];
+
+  let html=`<div class="mp-note">☪️ Built from your <strong>${ing.length} ticked ingredients</strong> — all meals are halal. Tap ⚡ Generate any time you update your shopping.</div>`;
+  html+=`<div class="ing-box"><div class="ing-title">🛒 Ingredients in this plan</div><div class="ing-tags">`;
+  ing.forEach(i=>{html+=`<span class="ing-tag">${i.n}</span>`;});
+  html+=`</div></div>`;
+
+  days.forEach(day=>{
+    html+=`<div class="day-card"><div class="day-hd ${day.c}"><span class="day-name">${day.name}</span></div><div class="day-meals">${day.meals.join('')}</div></div>`;
+  });
+
+  body.innerHTML=html;
+}
+
+// ── KEYBOARD ──
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    ['ovPrice','ovName','ovStore','ovAdd','ovRemove','ovSave'].forEach(id=>{
+      if(document.getElementById(id).classList.contains('on'))close(id);
+    });
+  }
+});
+document.getElementById('priceI').addEventListener('keydown',e=>{if(e.key==='Enter')savePrice();});
+document.getElementById('nameI').addEventListener('keydown',e=>{if(e.key==='Enter')saveName();});
+
+// ── INIT ──
+// Ensure REM values are Sets
+[1,2,3,4].forEach(w=>{if(!(REM[w] instanceof Set))REM[w]=new Set(REM[w]||[]);});
+loadLS();
+// After loadLS, REM entries from JSON are arrays, convert back
+[1,2,3,4].forEach(w=>{if(!(REM[w] instanceof Set))REM[w]=new Set(REM[w]||[]);});
+render();
+</script>
+</body>
+</html>
