@@ -2,138 +2,340 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#09091a">
-<title>Halal Shopping Tracker</title>
+<title>Student Budget Tracker</title>
 <style>
+/* ── TOKENS ── */
 :root{
   --bg:#09091a;--surface:#11112a;--card:#1a1a35;--border:#2a2a4a;
   --green:#10d97a;--gdim:#0a2a1a;--gold:#fbbf24;--odim:#2a1a00;
   --cream:#f5f0ff;--muted:#7a88b0;--red:#f43f5e;--blue:#38bdf8;
-  --purple:#c084fc;--text:#eae6ff;
+  --purple:#c084fc;--text:#eae6ff;--nav-bg:rgba(9,9,26,.97);
 }
+body.light{
+  --bg:#f0f2f8;--surface:#e2e6f2;--card:#ffffff;--border:#ccd3e8;
+  --green:#0b9e5a;--gdim:#d4f5e5;--gold:#c47d00;--odim:#fef8e0;
+  --cream:#12122a;--muted:#5a6a8a;--red:#dc2626;--blue:#0369a1;
+  --purple:#7c3aed;--text:#1a1f38;--nav-bg:rgba(240,242,248,.97);
+}
+
+/* ══════════════════════════════════════
+   SPLASH / LOADING SCREEN
+══════════════════════════════════════ */
+#splash{
+  position:fixed;inset:0;z-index:9999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  overflow:hidden;
+  background:linear-gradient(160deg,#05051a 0%,#0a0a28 40%,#06101a 100%);
+}
+
+/* Animated background orbs */
+.splash-orb{
+  position:absolute;border-radius:50%;filter:blur(60px);opacity:.18;
+  animation:orbFloat 6s ease-in-out infinite;
+}
+.splash-orb.o1{width:260px;height:260px;background:#10d97a;top:-60px;left:-80px;animation-delay:0s;}
+.splash-orb.o2{width:200px;height:200px;background:#c084fc;bottom:-40px;right:-60px;animation-delay:2s;}
+.splash-orb.o3{width:160px;height:160px;background:#38bdf8;bottom:30%;left:-40px;animation-delay:4s;}
+@keyframes orbFloat{
+  0%,100%{transform:translate(0,0) scale(1);}
+  33%{transform:translate(20px,-20px) scale(1.08);}
+  66%{transform:translate(-10px,15px) scale(.95);}
+}
+
+/* Logo */
+.splash-logo-wrap{position:relative;margin-bottom:1.6rem;}
+.splash-logo{
+  width:96px;height:96px;border-radius:28px;
+  background:linear-gradient(135deg,#10d97a 0%,#38bdf8 50%,#c084fc 100%);
+  display:flex;align-items:center;justify-content:center;
+  font-size:2.8rem;position:relative;z-index:2;
+  animation:logoPop .7s cubic-bezier(.34,1.56,.64,1) .2s both;
+  box-shadow:0 8px 40px rgba(16,217,122,.25),0 2px 12px rgba(0,0,0,.4);
+}
+@keyframes logoPop{
+  from{opacity:0;transform:scale(.2) rotate(-15deg);}
+  to{opacity:1;transform:scale(1) rotate(0deg);}
+}
+/* Ring pulses */
+.splash-ring{
+  position:absolute;inset:-8px;border-radius:36px;
+  border:2px solid rgba(16,217,122,.4);
+  animation:ringPulse 2s ease-out .9s infinite;
+}
+.splash-ring.r2{
+  inset:-16px;border-radius:44px;
+  border-color:rgba(56,189,248,.25);
+  animation-delay:1.3s;
+}
+@keyframes ringPulse{
+  0%{opacity:1;transform:scale(1);}
+  100%{opacity:0;transform:scale(1.35);}
+}
+
+/* App name */
+.splash-name{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  font-weight:800;font-size:1.55rem;letter-spacing:-.02em;
+  color:#f5f0ff;text-align:center;
+  opacity:0;animation:fadeUp .6s ease .85s both;
+}
+.splash-sub{
+  margin-top:.3rem;
+  font-size:.72rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+  color:#fbbf24;text-align:center;
+  opacity:0;animation:fadeUp .5s ease 1.1s both;
+}
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(14px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+/* Tips / loading messages */
+.splash-tips{
+  position:absolute;top:62%;left:50%;transform:translateX(-50%);
+  width:82%;text-align:center;
+}
+.splash-tip{
+  font-size:.8rem;color:rgba(255,255,255,.55);line-height:1.5;
+  position:absolute;left:0;right:0;
+  opacity:0;transition:opacity .7s ease;
+}
+.splash-tip.visible{opacity:1;}
+
+/* Progress */
+.splash-progress-wrap{
+  position:absolute;bottom:72px;left:50%;transform:translateX(-50%);
+  width:200px;text-align:center;
+}
+.splash-pct{
+  font-size:.72rem;font-weight:700;color:rgba(255,255,255,.4);
+  margin-bottom:.45rem;letter-spacing:.06em;
+  opacity:0;animation:fadeUp .4s ease 1.4s both;
+}
+.splash-bar{
+  height:3px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;
+}
+.splash-bar-fill{
+  height:100%;width:0%;border-radius:3px;
+  background:linear-gradient(90deg,#10d97a,#38bdf8,#c084fc);
+  transition:width .4s ease;
+}
+.splash-dots{
+  display:flex;justify-content:center;gap:.5rem;margin-top:.85rem;
+  opacity:0;animation:fadeUp .4s ease 1.5s both;
+}
+.splash-dot{
+  width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.2);
+  animation:dotBounce 1.2s ease-in-out infinite;
+}
+.splash-dot:nth-child(2){animation-delay:.15s;}
+.splash-dot:nth-child(3){animation-delay:.3s;}
+@keyframes dotBounce{
+  0%,100%{transform:translateY(0);background:rgba(255,255,255,.2);}
+  50%{transform:translateY(-5px);background:#10d97a;}
+}
+.splash-made{
+  position:absolute;bottom:24px;
+  font-size:.6rem;color:rgba(255,255,255,.2);letter-spacing:.06em;
+  opacity:0;animation:fadeUp .4s ease 1.8s both;
+}
+
+/* ── RESET ── */
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-html,body{height:100%;overflow-x:hidden;}
-body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:16px;padding-bottom:88px;}
+html{height:100%;}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  font-size:15px;min-height:100%;
+  /* Space for top header + bottom tab bar */
+  padding-top:64px;padding-bottom:68px;
+}
 
-/* NAV */
-nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(9,9,26,.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:1rem 1.25rem .8rem;}
-.nav-top{display:flex;justify-content:space-between;align-items:center;}
-.nav-title{font-weight:800;font-size:1.15rem;color:var(--cream);letter-spacing:-.01em;}
-.nav-title small{display:block;font-size:.72rem;font-weight:500;color:var(--gold);opacity:.95;margin-top:.1rem;}
-.nav-save{padding:.42rem .9rem;border-radius:8px;border:1.5px solid var(--green);background:none;color:var(--green);font-size:.76rem;font-weight:700;cursor:pointer;transition:.18s;}
-.nav-save:hover{background:var(--gdim);}
-.tabs{display:flex;gap:.45rem;margin-top:.75rem;overflow-x:auto;scrollbar-width:none;padding-bottom:.05rem;}
-.tabs::-webkit-scrollbar{display:none;}
-.tab{flex-shrink:0;padding:.36rem .95rem;border-radius:20px;border:1.5px solid var(--border);background:none;color:var(--muted);font-size:.78rem;font-weight:700;cursor:pointer;transition:.18s;}
-.tab.on{background:var(--gold);border-color:var(--gold);color:#09091a;}
-.tab.meal-tab{border-color:rgba(192,132,252,.5);color:var(--purple);}
-.tab.meal-tab.on{background:var(--purple);border-color:var(--purple);color:#fff;}
+/* ── TOP HEADER ── */
+.top-bar{
+  position:fixed;top:0;left:0;right:0;z-index:300;
+  background:var(--nav-bg);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  height:64px;display:flex;align-items:center;
+  padding:0 1rem;justify-content:space-between;
+  max-width:100%;
+}
+.top-bar-left{display:flex;flex-direction:column;justify-content:center;}
+.top-title{font-weight:800;font-size:1.05rem;color:var(--cream);letter-spacing:-.01em;line-height:1.15;}
+.top-sub{font-size:.65rem;color:var(--gold);font-weight:500;margin-top:.05rem;}
+.top-bar-right{display:flex;align-items:center;gap:.5rem;}
+.icon-btn{
+  width:36px;height:36px;border-radius:10px;
+  border:1.5px solid var(--border);background:none;
+  color:var(--muted);font-size:.95rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:.18s;
+}
+.icon-btn:hover{border-color:var(--gold);color:var(--gold);}
 
-/* MAIN */
-main{margin:104px auto 0;padding:.9rem 1.1rem;max-width:680px;}
+/* ── BOTTOM TAB BAR ── */
+.tab-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:300;
+  background:var(--nav-bg);backdrop-filter:blur(20px);
+  border-top:1px solid var(--border);
+  height:68px;display:flex;align-items:stretch;
+  max-width:100%;
+}
+.tab-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:.18rem;cursor:pointer;
+  border:none;background:none;color:var(--muted);
+  font-size:.58rem;font-weight:700;letter-spacing:.03em;
+  text-transform:uppercase;transition:.18s;padding:.5rem 0;
+  position:relative;
+}
+.tab-item .t-ico{font-size:1.35rem;line-height:1;transition:.2s;}
+.tab-item .t-lbl{line-height:1;}
+.tab-item.on{color:var(--gold);}
+.tab-item.on .t-ico{transform:translateY(-2px);}
+.tab-item::before{
+  content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:0;height:2.5px;background:var(--gold);border-radius:0 0 3px 3px;
+  transition:.2s;
+}
+.tab-item.on::before{width:32px;}
 
-/* MONTHLY CARD */
-.m-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1rem 1.1rem;margin-bottom:.85rem;}
-.m-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.7rem;}
-.m-label{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);}
-.m-nums{display:flex;gap:1rem;}
-.m-num .v{font-weight:800;font-size:1rem;}
-.m-num .l{font-size:.65rem;color:var(--muted);}
-.seg-bar{display:flex;gap:2px;height:12px;background:var(--border);border-radius:10px;overflow:hidden;}
+/* ── SCREENS ── */
+.screen{display:none;max-width:680px;margin:0 auto;padding:.85rem 1rem;}
+.screen.on{display:block;}
+
+/* ── HOME SCREEN ── */
+.home-greeting{margin-bottom:1.1rem;}
+.home-greeting h2{font-size:1.25rem;font-weight:800;color:var(--cream);line-height:1.2;}
+.home-greeting p{font-size:.78rem;color:var(--muted);margin-top:.3rem;line-height:1.4;}
+
+/* Summary cards row */
+.sum-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.85rem;}
+.sum-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:.9rem 1rem;}
+.sum-card .sc-lbl{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);}
+.sum-card .sc-val{font-size:1.45rem;font-weight:800;margin:.18rem 0 .1rem;line-height:1;}
+.sum-card .sc-sub{font-size:.65rem;color:var(--muted);}
+
+/* Monthly overview card */
+.m-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1rem;margin-bottom:.85rem;}
+.m-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.65rem;}
+.m-label{font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);}
+.m-nums{display:flex;gap:.9rem;}
+.m-num .v{font-weight:800;font-size:.95rem;}
+.m-num .l{font-size:.6rem;color:var(--muted);}
+.seg-bar{display:flex;gap:2px;height:11px;background:var(--border);border-radius:9px;overflow:hidden;}
 .seg{flex:1;height:100%;background:var(--border);position:relative;overflow:hidden;}
-.seg:first-child{border-radius:10px 0 0 10px;}.seg:last-child{border-radius:0 10px 10px 0;}
+.seg:first-child{border-radius:9px 0 0 9px;}.seg:last-child{border-radius:0 9px 9px 0;}
 .seg-fill{position:absolute;inset:0 auto 0 0;transition:width .45s cubic-bezier(.34,1.56,.64,1);}
 .s1 .seg-fill{background:#10d97a;}.s2 .seg-fill{background:#2dd4bf;}
 .s3 .seg-fill{background:#fbbf24;}.s4 .seg-fill{background:#fb923c;}
 .seg-fill.over{background:var(--red)!important;}
-.seg-labels{display:flex;gap:2px;margin-top:.28rem;}
-.seg-lbl{flex:1;text-align:center;font-size:.6rem;color:var(--muted);}
-.wk-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem;margin-top:.75rem;}
-.wk-mini{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:.45rem .35rem;text-align:center;cursor:pointer;transition:.18s;}
-.wk-mini:hover,.wk-mini.on{border-color:var(--gold);background:rgba(251,191,36,.07);}
-.wk-mini .wml{font-size:.62rem;font-weight:700;color:var(--muted);text-transform:uppercase;}
-.wk-mini .wms{font-weight:800;font-size:.88rem;margin-top:.1rem;}
-.wk-mini .wmr{font-size:.6rem;color:var(--muted);}
-.m-chip{margin-top:.65rem;display:flex;align-items:center;gap:.4rem;border-radius:9px;padding:.45rem .85rem;font-size:.78rem;border:1px solid rgba(56,189,248,.35);background:rgba(56,189,248,.08);color:var(--blue);line-height:1.4;}
-.m-chip.good{background:rgba(16,217,122,.1);border-color:rgba(16,217,122,.4);color:var(--green);}
-.m-chip.warn{background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.4);color:var(--gold);}
-.m-chip.bad{background:rgba(244,63,94,.1);border-color:rgba(244,63,94,.4);color:var(--red);}
+.seg-labels{display:flex;gap:2px;margin-top:.22rem;}
+.seg-lbl{flex:1;text-align:center;font-size:.56rem;color:var(--muted);}
+.wk-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.38rem;margin-top:.7rem;}
+.wk-mini{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:.42rem .3rem;text-align:center;cursor:pointer;transition:.18s;}
+.wk-mini:hover,.wk-mini.act{border-color:var(--gold);background:rgba(251,191,36,.07);}
+.wk-mini .wml{font-size:.58rem;font-weight:700;color:var(--muted);text-transform:uppercase;}
+.wk-mini .wms{font-weight:800;font-size:.82rem;margin-top:.08rem;}
+.wk-mini .wmr{font-size:.56rem;color:var(--muted);}
+.m-chip{margin-top:.6rem;display:flex;align-items:center;gap:.38rem;border-radius:9px;padding:.42rem .8rem;font-size:.75rem;border:1px solid rgba(56,189,248,.3);background:rgba(56,189,248,.07);color:var(--blue);line-height:1.35;}
+.m-chip.good{background:rgba(16,217,122,.08);border-color:rgba(16,217,122,.35);color:var(--green);}
+.m-chip.warn{background:rgba(251,191,36,.08);border-color:rgba(251,191,36,.35);color:var(--gold);}
+.m-chip.bad{background:rgba(244,63,94,.08);border-color:rgba(244,63,94,.35);color:var(--red);}
 
-/* WEEK BUDGET */
-.w-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1rem 1.1rem;margin-bottom:.85rem;}
-.w-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.5rem;}
-.w-label{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);}
-.w-nums{display:flex;gap:1rem;}
-.w-num .v{font-weight:800;font-size:1rem;}
-.w-num .l{font-size:.65rem;color:var(--muted);}
-.prog{height:10px;background:var(--border);border-radius:10px;overflow:hidden;}
-.prog-fill{height:100%;border-radius:10px;transition:width .45s cubic-bezier(.34,1.56,.64,1);background:linear-gradient(90deg,var(--green),#2dd4bf);}
+/* Quick-access week buttons on home */
+.wk-btns{display:grid;grid-template-columns:repeat(2,1fr);gap:.6rem;margin-bottom:.85rem;}
+.wk-btn{background:var(--card);border:1.5px solid var(--border);border-radius:13px;padding:.85rem 1rem;cursor:pointer;text-align:left;transition:.18s;display:flex;flex-direction:column;gap:.22rem;}
+.wk-btn:hover{border-color:var(--gold);}
+.wk-btn .wb-week{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);}
+.wk-btn .wb-name{font-size:.78rem;font-weight:600;color:var(--text);}
+.wk-btn .wb-amt{font-size:.72rem;color:var(--green);font-weight:700;}
+.wk-btn .wb-bar{height:4px;background:var(--border);border-radius:4px;margin-top:.3rem;overflow:hidden;}
+.wk-btn .wb-bar-fill{height:100%;background:linear-gradient(90deg,var(--green),#2dd4bf);border-radius:4px;transition:.4s;}
+.wk-btn .wb-bar-fill.over{background:linear-gradient(90deg,var(--gold),var(--red));}
+
+/* ── SHOPPING SCREEN ── */
+.sh-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;}
+.sh-title-row{display:flex;flex-direction:column;}
+.sh-title{font-size:1.05rem;font-weight:800;color:var(--cream);}
+.sh-sub{font-size:.7rem;color:var(--muted);margin-top:.1rem;}
+.sh-week-pills{display:flex;gap:.38rem;margin-bottom:.75rem;overflow-x:auto;scrollbar-width:none;}
+.sh-week-pills::-webkit-scrollbar{display:none;}
+.sh-pill{flex-shrink:0;padding:.32rem .85rem;border-radius:18px;border:1.5px solid var(--border);background:none;color:var(--muted);font-size:.74rem;font-weight:700;cursor:pointer;transition:.18s;}
+.sh-pill.on{background:var(--gold);border-color:var(--gold);color:#09091a;}
+
+/* Weekly budget bar */
+.w-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:.9rem 1rem;margin-bottom:.75rem;}
+.w-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.45rem;}
+.w-label{font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);}
+.w-nums{display:flex;gap:.9rem;}
+.w-num .v{font-weight:800;font-size:.95rem;}
+.w-num .l{font-size:.6rem;color:var(--muted);}
+.prog{height:9px;background:var(--border);border-radius:9px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:9px;transition:width .45s cubic-bezier(.34,1.56,.64,1);background:linear-gradient(90deg,var(--green),#2dd4bf);}
 .prog-fill.over{background:linear-gradient(90deg,var(--gold),var(--red));}
-.prog-marks{display:flex;justify-content:space-between;margin-top:.24rem;}
-.prog-mark{font-size:.6rem;color:var(--muted);}
-.w-chip{margin-top:.6rem;display:flex;align-items:center;gap:.4rem;background:var(--gdim);border:1px solid var(--green);border-radius:9px;padding:.4rem .85rem;font-size:.78rem;color:var(--green);width:100%;line-height:1.3;}
+.prog-marks{display:flex;justify-content:space-between;margin-top:.2rem;}
+.prog-mark{font-size:.56rem;color:var(--muted);}
+.w-chip{margin-top:.55rem;display:flex;align-items:center;gap:.38rem;background:var(--gdim);border:1px solid var(--green);border-radius:9px;padding:.38rem .8rem;font-size:.75rem;color:var(--green);width:100%;line-height:1.3;}
 .w-chip.warn{background:var(--odim);border-color:var(--gold);color:var(--gold);}
-.w-chip.bad{background:rgba(244,63,94,.1);border-color:var(--red);color:var(--red);}
+.w-chip.bad{background:rgba(244,63,94,.08);border-color:var(--red);color:var(--red);}
 
-/* ACTIONS */
-.actions{display:flex;gap:.45rem;margin-bottom:.8rem;flex-wrap:wrap;}
-.act{flex:1;min-width:68px;padding:.52rem .35rem;border-radius:9px;border:1.5px solid var(--border);background:none;color:var(--muted);font-size:.75rem;font-weight:700;cursor:pointer;text-align:center;transition:.18s;}
+/* Actions */
+.acts{display:flex;gap:.42rem;margin-bottom:.75rem;flex-wrap:wrap;}
+.act{flex:1;min-width:64px;padding:.48rem .3rem;border-radius:9px;border:1.5px solid var(--border);background:none;color:var(--muted);font-size:.72rem;font-weight:700;cursor:pointer;text-align:center;transition:.18s;}
 .act:hover{border-color:var(--gold);color:var(--gold);}
 .act.add{border-color:rgba(16,217,122,.5);color:var(--green);}
 .act.add:hover{background:var(--gdim);}
 .act.del:hover{border-color:var(--red);color:var(--red);}
 
-/* CATEGORY */
-.cat-hd{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);padding:.42rem 0;margin:.72rem 0 .38rem;}
+/* Category header */
+.cat-hd{font-size:.66rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);padding:.4rem 0;margin:.68rem 0 .35rem;}
 
-/* ITEM */
-.item{display:grid;grid-template-columns:2rem 1fr auto;align-items:center;gap:.55rem;padding:.65rem .8rem;border-radius:11px;background:var(--card);border:1px solid var(--border);margin-bottom:.35rem;transition:.2s;}
-.item.done{opacity:.38;background:var(--surface);}
+/* Item card */
+.item{display:grid;grid-template-columns:2rem 1fr auto;align-items:center;gap:.52rem;padding:.6rem .75rem;border-radius:12px;background:var(--card);border:1px solid var(--border);margin-bottom:.32rem;transition:.2s;}
+.item.done{opacity:.35;background:var(--surface);}
 .item.done .iname{text-decoration:line-through;}
-.chk{width:1.65rem;height:1.65rem;border-radius:6px;border:2px solid var(--border);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.82rem;flex-shrink:0;transition:.18s;color:transparent;}
+.chk{width:1.6rem;height:1.6rem;border-radius:6px;border:2px solid var(--border);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0;transition:.18s;color:transparent;}
 .chk.on{background:var(--green);border-color:var(--green);color:#09091a;}
-.iname{font-size:.88rem;line-height:1.25;font-weight:500;}
-.imeta{display:flex;align-items:center;gap:.3rem;margin-top:.16rem;flex-wrap:wrap;}
-.stag{font-size:.63rem;padding:.08rem .4rem;border-radius:5px;font-weight:700;cursor:pointer;}
+.iname{font-size:.85rem;line-height:1.25;font-weight:500;}
+.imeta{display:flex;align-items:center;gap:.28rem;margin-top:.14rem;flex-wrap:wrap;}
+.stag{font-size:.6rem;padding:.07rem .38rem;border-radius:5px;font-weight:700;cursor:pointer;}
 .sa{background:#1a2a55;color:#82b4ff;}.sl{background:#3a1e00;color:#ffb04a;}
 .sk{background:#3a0e0e;color:#ff8080;}.se{background:#0a2a15;color:#4ae87a;}
 .sn{background:#28103d;color:#c585ff;}.sf{background:#0d2535;color:#5dd0f0;}
 .sany{background:#282840;color:#b0b0d0;}.sc{background:#1e1e38;color:#a8a8f0;}
-.iright{display:flex;flex-direction:column;align-items:flex-end;gap:.22rem;flex-shrink:0;}
-.iprice{font-weight:800;font-size:.92rem;color:var(--green);cursor:pointer;padding:.08rem .28rem;border-radius:5px;}
+.iright{display:flex;flex-direction:column;align-items:flex-end;gap:.2rem;flex-shrink:0;}
+.iprice{font-weight:800;font-size:.9rem;color:var(--green);cursor:pointer;padding:.07rem .25rem;border-radius:5px;}
 .iprice:hover{background:var(--gdim);}
-.ibtns{display:flex;gap:.18rem;}
-.ibtn{font-size:.6rem;padding:.1rem .28rem;border-radius:5px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;font-weight:700;transition:.13s;}
+.ibtns{display:flex;gap:.15rem;}
+.ibtn{font-size:.58rem;padding:.09rem .25rem;border-radius:5px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;font-weight:700;transition:.13s;}
 .ibtn.ip:hover{border-color:var(--green);color:var(--green);}
 .ibtn.in:hover{border-color:var(--blue);color:var(--blue);}
 .ibtn.is:hover{border-color:var(--purple);color:var(--purple);}
 .ibtn.ir:hover{border-color:var(--red);color:var(--red);}
 
-/* BOTTOM BAR */
-.bar{position:fixed;bottom:0;left:0;right:0;background:rgba(9,9,26,.97);backdrop-filter:blur(20px);border-top:1px solid var(--border);padding:.75rem 1.25rem;z-index:200;}
-.bar-grid{display:grid;grid-template-columns:repeat(3,1fr);text-align:center;max-width:680px;margin:0 auto;}
-.bar-v{font-weight:800;font-size:1rem;}
-.bar-l{font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
-
-/* MEAL PLAN */
-.mp-main{display:none;}
-.mp-main.on{display:block;}
-.mp-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.9rem;}
+/* ── MEAL PLAN SCREEN ── */
+.mp-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.85rem;}
 .mp-header h2{font-weight:800;font-size:1.05rem;color:var(--cream);}
-.mp-gen{padding:.5rem 1rem;border-radius:9px;background:var(--purple);border:none;color:#fff;font-size:.78rem;font-weight:700;cursor:pointer;}
+.mp-gen{padding:.48rem .95rem;border-radius:9px;background:var(--purple);border:none;color:#fff;font-size:.76rem;font-weight:700;cursor:pointer;}
 .mp-gen:hover{opacity:.85;}
+.mp-wk-sel{display:flex;gap:.38rem;margin-bottom:.75rem;overflow-x:auto;scrollbar-width:none;}
+.mp-wk-sel::-webkit-scrollbar{display:none;}
+.mp-pill{flex-shrink:0;padding:.3rem .78rem;border-radius:18px;border:1.5px solid var(--border);background:none;color:var(--muted);font-size:.72rem;font-weight:700;cursor:pointer;transition:.18s;}
+.mp-pill.on{background:var(--purple);border-color:var(--purple);color:#fff;}
 .mp-empty{text-align:center;padding:2.5rem 1rem;color:var(--muted);line-height:1.8;}
-.mp-empty strong{display:block;font-size:1.05rem;color:var(--text);margin-bottom:.45rem;}
-.ing-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:.85rem;margin-bottom:.9rem;}
-.ing-title{font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem;}
-.ing-tags{display:flex;flex-wrap:wrap;gap:.32rem;}
-.ing-tag{font-size:.72rem;padding:.16rem .52rem;border-radius:12px;background:var(--gdim);color:var(--green);border:1px solid rgba(16,217,122,.3);}
-.mp-note{background:var(--odim);border:1px solid rgba(251,191,36,.35);border-radius:11px;padding:.6rem .9rem;font-size:.78rem;color:var(--gold);margin-bottom:.9rem;line-height:1.45;}
-.day-card{background:var(--card);border:1px solid var(--border);border-radius:13px;margin-bottom:.75rem;overflow:hidden;}
-.day-hd{padding:.7rem .95rem;display:flex;justify-content:space-between;align-items:center;}
+.mp-empty strong{display:block;font-size:1rem;color:var(--text);margin-bottom:.4rem;}
+.ing-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:.8rem;margin-bottom:.85rem;}
+.ing-title{font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.45rem;}
+.ing-tags{display:flex;flex-wrap:wrap;gap:.28rem;}
+.ing-tag{font-size:.7rem;padding:.14rem .48rem;border-radius:11px;background:var(--gdim);color:var(--green);border:1px solid rgba(16,217,122,.3);}
+.mp-note{background:var(--odim);border:1px solid rgba(251,191,36,.3);border-radius:11px;padding:.55rem .85rem;font-size:.75rem;color:var(--gold);margin-bottom:.85rem;line-height:1.45;}
+.day-card{background:var(--card);border:1px solid var(--border);border-radius:13px;margin-bottom:.72rem;overflow:hidden;}
+.day-hd{padding:.65rem .9rem;}
 .day-hd.c0{background:linear-gradient(135deg,#0a2a1e,#1a1a35);}
 .day-hd.c1{background:linear-gradient(135deg,#2a1a00,#1a1a35);}
 .day-hd.c2{background:linear-gradient(135deg,#0a2535,#1a1a35);}
@@ -141,80 +343,148 @@ main{margin:104px auto 0;padding:.9rem 1.1rem;max-width:680px;}
 .day-hd.c4{background:linear-gradient(135deg,#280e38,#1a1a35);}
 .day-hd.c5{background:linear-gradient(135deg,#1a2a55,#1a1a35);}
 .day-hd.c6{background:linear-gradient(135deg,#2a1a0a,#1a1a35);}
-.day-name{font-weight:800;font-size:.9rem;}
-.day-meals{padding:0 .95rem .8rem;}
-.meal{padding:.5rem 0;border-bottom:1px solid var(--border);}
+.day-name{font-weight:800;font-size:.88rem;color:var(--cream);}
+.day-meals{padding:0 .9rem .75rem;}
+.meal{padding:.48rem 0;border-bottom:1px solid var(--border);}
 .meal:last-child{border-bottom:none;}
-.meal-row{display:grid;grid-template-columns:70px 1fr;gap:.42rem;}
-.meal-lbl{font-size:.65rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);padding-top:.12rem;line-height:1.2;}
-.meal-name{font-size:.88rem;font-weight:600;color:var(--cream);line-height:1.25;}
-.meal-desc{font-size:.75rem;color:var(--muted);margin-top:.18rem;line-height:1.35;}
-.meal-tags{display:flex;flex-wrap:wrap;gap:.25rem;margin-top:.25rem;}
-.mt{font-size:.62rem;padding:.08rem .38rem;border-radius:8px;font-weight:600;}
+.meal-row{display:grid;grid-template-columns:68px 1fr;gap:.4rem;}
+.meal-lbl{font-size:.62rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);padding-top:.1rem;line-height:1.2;}
+.meal-name{font-size:.85rem;font-weight:600;color:var(--cream);line-height:1.2;}
+.meal-desc{font-size:.72rem;color:var(--muted);margin-top:.15rem;line-height:1.3;}
+.meal-tags{display:flex;flex-wrap:wrap;gap:.22rem;margin-top:.22rem;}
+.mt{font-size:.6rem;padding:.07rem .35rem;border-radius:7px;font-weight:600;}
 .mtp{background:#2a0e0e;color:#ff8080;}.mtb{background:#1a2a55;color:#82b4ff;}
 .mte{background:#0a2a1e;color:#10d97a;}.mth{background:#2a1a00;color:#fbbf24;}
 
-/* MODALS */
+/* ── SETTINGS SCREEN ── */
+.settings-section{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:.85rem;}
+.settings-hd{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:.6rem 1rem .3rem;}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:.72rem 1rem;border-bottom:1px solid var(--border);cursor:pointer;transition:.15s;}
+.settings-row:last-child{border-bottom:none;}
+.settings-row:hover{background:var(--surface);}
+.sr-left{display:flex;align-items:center;gap:.7rem;}
+.sr-icon{font-size:1.1rem;width:1.5rem;text-align:center;}
+.sr-text{font-size:.85rem;font-weight:500;}
+.sr-sub{font-size:.68rem;color:var(--muted);margin-top:.08rem;}
+.sr-right{color:var(--muted);font-size:.85rem;}
+.toggle{width:42px;height:24px;border-radius:12px;background:var(--border);border:none;cursor:pointer;position:relative;transition:.25s;flex-shrink:0;}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.25s;}
+.toggle.on{background:var(--green);}
+.toggle.on::after{left:21px;}
+.save-code-area{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:.65rem .9rem;font-family:monospace;font-size:.65rem;color:var(--muted);height:64px;resize:none;margin:.5rem 0;}
+.save-code-area:focus{outline:none;border-color:var(--gold);}
+
+/* ── MODALS ── */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:500;align-items:flex-end;justify-content:center;}
 .overlay.on{display:flex;}
-.modal{background:var(--card);border:1px solid var(--border);border-radius:20px 20px 0 0;padding:1.4rem 1.25rem 1.9rem;width:100%;max-width:520px;animation:up .2s ease;}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:20px 20px 0 0;padding:1.35rem 1.2rem 1.85rem;width:100%;max-width:520px;animation:up .2s ease;max-height:90vh;overflow-y:auto;}
 @keyframes up{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
-.modal h3{font-weight:800;font-size:1rem;margin-bottom:.22rem;color:var(--cream);}
-.modal p{font-size:.78rem;color:var(--muted);margin-bottom:.9rem;line-height:1.45;}
-.field{margin-bottom:.65rem;}
-.flbl{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:.26rem;}
-.finput{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:11px;padding:.72rem .95rem;font-size:.98rem;color:var(--text);transition:.18s;}
+.modal h3{font-weight:800;font-size:.98rem;margin-bottom:.2rem;color:var(--cream);}
+.modal p{font-size:.76rem;color:var(--muted);margin-bottom:.85rem;line-height:1.45;}
+.field{margin-bottom:.6rem;}
+.flbl{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:.22rem;}
+.finput{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:11px;padding:.68rem .9rem;font-size:.95rem;color:var(--text);transition:.18s;}
 .finput:focus{outline:none;border-color:var(--gold);}
 .finput.green{border-color:var(--green);color:var(--green);}
 .finput.blue{border-color:var(--blue);color:var(--blue);}
 .finput.purple{border-color:var(--purple);color:var(--purple);}
-.finput.num{text-align:center;font-weight:800;font-size:1.2rem;}
+.finput.num{text-align:center;font-weight:800;font-size:1.15rem;}
 select.finput{cursor:pointer;}
 select.finput option{background:var(--card);}
-.mbtns{display:flex;gap:.5rem;margin-top:.95rem;}
-.mbtn{flex:1;padding:.72rem;border-radius:11px;border:none;font-size:.82rem;font-weight:800;cursor:pointer;transition:.15s;}
+.mbtns{display:flex;gap:.5rem;margin-top:.9rem;}
+.mbtn{flex:1;padding:.7rem;border-radius:11px;border:none;font-size:.8rem;font-weight:800;cursor:pointer;transition:.15s;}
 .mbtn.cancel{background:var(--border);color:var(--muted);}
 .mbtn.ok-green{background:var(--green);color:#09091a;}
 .mbtn.ok-blue{background:var(--blue);color:#fff;}
 .mbtn.ok-purple{background:var(--purple);color:#fff;}
 .mbtn.ok-red{background:var(--red);color:#fff;}
-textarea.finput{height:72px;resize:none;font-size:.7rem;font-family:monospace;}
-
-/* RESPONSIVE */
-@media(min-width:600px){
-  main{padding:1rem 1.5rem;}
-  nav{padding:1.1rem 1.5rem .85rem;}
-  main{margin-top:108px;}
-  .item{padding:.72rem 1rem;}
-  .m-card,.w-card{padding:1.1rem 1.25rem;}
-}
-@media(min-width:900px){
-  nav{padding:1.15rem 2rem .9rem;}
-  main{margin-top:112px;padding:1rem 2rem;}
-}
+textarea.finput{height:70px;resize:none;font-size:.68rem;font-family:monospace;}
 </style>
 </head>
 <body>
 
-<nav>
-  <div class="nav-top">
-    <div class="nav-title">Halal Tracker <small>☪️ Seelow · €25/wk · €100/mo</small></div>
-    <button class="nav-save" onclick="openSave()">💾 Save</button>
-  </div>
-  <div class="tabs" id="tabs">
-    <button class="tab on" onclick="go(1)">Week 1</button>
-    <button class="tab" onclick="go(2)">Week 2</button>
-    <button class="tab" onclick="go(3)">Week 3</button>
-    <button class="tab" onclick="go(4)">Week 4</button>
-    <button class="tab meal-tab" onclick="go('meal')">🍽️ Meal Plan</button>
-  </div>
-</nav>
+<!-- SPLASH SCREEN -->
+<div id="splash">
+  <!-- Background orbs -->
+  <div class="splash-orb o1"></div>
+  <div class="splash-orb o2"></div>
+  <div class="splash-orb o3"></div>
 
-<main>
-  <!-- Monthly -->
-  <div class="m-card" id="mCard">
+  <!-- Logo -->
+  <div class="splash-logo-wrap">
+    <div class="splash-ring"></div>
+    <div class="splash-ring r2"></div>
+    <div class="splash-logo">💰</div>
+  </div>
+
+  <!-- Name -->
+  <div class="splash-name">Student Budget</div>
+  <div class="splash-sub">☪️ Tracker · Seelow, Germany</div>
+
+  <!-- Cycling tips -->
+  <div class="splash-tips" id="splashTips">
+    <div class="splash-tip visible" id="st0">🛒 Loading your shopping lists...</div>
+    <div class="splash-tip" id="st1">💡 Tip: Aldi & Lidl have the best prices in Seelow</div>
+    <div class="splash-tip" id="st2">☪️ All meals in your plan are halal-friendly</div>
+    <div class="splash-tip" id="st3">📅 Your €100/month budget tracker is ready</div>
+    <div class="splash-tip" id="st4">🍽️ Meal plans are built from what you actually buy</div>
+    <div class="splash-tip" id="st5">💰 Saving €7 this month already? Amazing!</div>
+    <div class="splash-tip" id="st6">🌙 Dark & light mode — switch in Settings</div>
+    <div class="splash-tip" id="st7">✅ Almost ready — setting up your dashboard...</div>
+  </div>
+
+  <!-- Progress -->
+  <div class="splash-progress-wrap">
+    <div class="splash-pct" id="splashPct">0%</div>
+    <div class="splash-bar"><div class="splash-bar-fill" id="splashFill"></div></div>
+    <div class="splash-dots">
+      <div class="splash-dot"></div>
+      <div class="splash-dot"></div>
+      <div class="splash-dot"></div>
+    </div>
+  </div>
+
+  <div class="splash-made">Made with ❤️ for a Hyderabadi student in Germany</div>
+</div>
+
+<!-- TOP HEADER -->
+<header class="top-bar">
+  <div class="top-bar-left">
+    <div class="top-title" id="topTitle">Student Budget Tracker</div>
+    <div class="top-sub" id="topSub">☪️ Seelow · €25/wk · €100/month</div>
+  </div>
+  <div class="top-bar-right">
+    <button class="icon-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+  </div>
+</header>
+
+<!-- ═══════════════════ SCREENS ═══════════════════ -->
+
+<!-- HOME -->
+<div class="screen on" id="scHome">
+  <div class="home-greeting">
+    <h2 id="greetMsg">Good day! 👋</h2>
+    <p>Track your weekly spending and keep your €100/month budget on track.</p>
+  </div>
+
+  <!-- 2 summary cards -->
+  <div class="sum-row">
+    <div class="sum-card">
+      <div class="sc-lbl">Monthly Spent</div>
+      <div class="sc-val" id="hMSpent" style="color:var(--red)">€0.00</div>
+      <div class="sc-sub">of €100 budget</div>
+    </div>
+    <div class="sum-card">
+      <div class="sc-lbl">Monthly Left</div>
+      <div class="sc-val" id="hMLeft" style="color:var(--green)">€100.00</div>
+      <div class="sc-sub">remaining</div>
+    </div>
+  </div>
+
+  <!-- Monthly seg bar -->
+  <div class="m-card">
     <div class="m-row">
-      <span class="m-label">📅 Monthly Budget — €100</span>
+      <span class="m-label">📅 Monthly Overview</span>
       <div class="m-nums">
         <div class="m-num"><div class="v" id="mSp" style="color:var(--red)">€0.00</div><div class="l">Spent</div></div>
         <div class="m-num"><div class="v" id="mLf" style="color:var(--green)">€100.00</div><div class="l">Left</div></div>
@@ -227,24 +497,48 @@ textarea.finput{height:72px;resize:none;font-size:.7rem;font-family:monospace;}
       <div class="seg s4"><div class="seg-fill" id="sf4" style="width:0%"></div></div>
     </div>
     <div class="seg-labels">
-      <span class="seg-lbl">Wk 1 €25</span><span class="seg-lbl">Wk 2 €25</span>
-      <span class="seg-lbl">Wk 3 €25</span><span class="seg-lbl">Wk 4 €25</span>
+      <span class="seg-lbl">Wk 1</span><span class="seg-lbl">Wk 2</span>
+      <span class="seg-lbl">Wk 3</span><span class="seg-lbl">Wk 4</span>
     </div>
     <div class="wk-grid">
-      <div class="wk-mini on" id="wm1" onclick="go(1)"><div class="wml">Wk 1</div><div class="wms" id="ws1">€0.00</div><div class="wmr" id="wr1">€25 left</div></div>
-      <div class="wk-mini" id="wm2" onclick="go(2)"><div class="wml">Wk 2</div><div class="wms" id="ws2">€0.00</div><div class="wmr" id="wr2">€25 left</div></div>
-      <div class="wk-mini" id="wm3" onclick="go(3)"><div class="wml">Wk 3</div><div class="wms" id="ws3">€0.00</div><div class="wmr" id="wr3">€25 left</div></div>
-      <div class="wk-mini" id="wm4" onclick="go(4)"><div class="wml">Wk 4</div><div class="wms" id="ws4">€0.00</div><div class="wmr" id="wr4">€25 left</div></div>
+      <div class="wk-mini act" id="wm1" onclick="goShop(1)"><div class="wml">Wk 1</div><div class="wms" id="ws1">€0.00</div><div class="wmr" id="wr1">€25 left</div></div>
+      <div class="wk-mini" id="wm2" onclick="goShop(2)"><div class="wml">Wk 2</div><div class="wms" id="ws2">€0.00</div><div class="wmr" id="wr2">€25 left</div></div>
+      <div class="wk-mini" id="wm3" onclick="goShop(3)"><div class="wml">Wk 3</div><div class="wms" id="ws3">€0.00</div><div class="wmr" id="wr3">€25 left</div></div>
+      <div class="wk-mini" id="wm4" onclick="goShop(4)"><div class="wml">Wk 4</div><div class="wms" id="ws4">€0.00</div><div class="wmr" id="wr4">€25 left</div></div>
     </div>
-    <div class="m-chip" id="mChip">💡 Tick items across all weeks to build your monthly picture.</div>
+    <div class="m-chip" id="mChip">💡 Tap a week to start shopping!</div>
   </div>
 
-  <!-- Weekly budget -->
-  <div class="w-card" id="wCard">
+  <!-- Quick week access -->
+  <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:.5rem;">Quick Access</div>
+  <div class="wk-btns" id="wkBtns">
+    <!-- filled by JS -->
+  </div>
+</div>
+
+<!-- SHOPPING -->
+<div class="screen" id="scShop">
+  <div class="sh-header">
+    <div class="sh-title-row">
+      <div class="sh-title">🛒 Shopping List</div>
+      <div class="sh-sub" id="shSub">Week 1 · €25 budget</div>
+    </div>
+  </div>
+
+  <!-- Week pills -->
+  <div class="sh-week-pills" id="shPills">
+    <button class="sh-pill on" onclick="setWk(1)">Week 1</button>
+    <button class="sh-pill" onclick="setWk(2)">Week 2</button>
+    <button class="sh-pill" onclick="setWk(3)">Week 3</button>
+    <button class="sh-pill" onclick="setWk(4)">Week 4</button>
+  </div>
+
+  <!-- Weekly budget card -->
+  <div class="w-card">
     <div class="w-top">
-      <span class="w-label">📦 Week <span id="wkN">1</span> — €25</span>
+      <span class="w-label">Week <span id="wkN">1</span> Budget</span>
       <div class="w-nums">
-        <div class="w-num"><div class="v" id="wSp" style="color:var(--red)">€0.00</div><div class="l">Ticked</div></div>
+        <div class="w-num"><div class="v" id="wSp" style="color:var(--red)">€0.00</div><div class="l">Spent</div></div>
         <div class="w-num"><div class="v" id="wLf" style="color:var(--green)">€25.00</div><div class="l">Left</div></div>
       </div>
     </div>
@@ -253,61 +547,134 @@ textarea.finput{height:72px;resize:none;font-size:.7rem;font-family:monospace;}
     <div class="w-chip" id="wChip">💰 Tick items to track spending</div>
   </div>
 
-  <!-- Actions -->
-  <div class="actions" id="acts">
-    <button class="act add" onclick="openAdd()">＋ Add Item</button>
+  <!-- Action buttons -->
+  <div class="acts">
+    <button class="act add" onclick="openAdd()">＋ Add</button>
     <button class="act" onclick="checkAll()">✓ All</button>
-    <button class="act" onclick="uncheckAll()">↺ Uncheck</button>
+    <button class="act" onclick="uncheckAll()">↺ Clear</button>
     <button class="act del" onclick="resetWk()">↩ Reset</button>
   </div>
 
-  <!-- Week panels -->
+  <!-- Item panels -->
   <div id="panels"></div>
+</div>
 
-  <!-- Meal plan -->
-  <div class="mp-main" id="mpMain">
-    <div class="mp-header">
-      <h2>🍽️ Meal Plan</h2>
-      <button class="mp-gen" onclick="genMeal()">⚡ Generate from Ticked</button>
-    </div>
-    <div id="mpBody">
-      <div class="mp-empty"><strong>No meal plan yet</strong>Tick groceries in any week tab,<br>then tap ⚡ Generate from Ticked.</div>
-    </div>
+<!-- MEAL PLAN -->
+<div class="screen" id="scMeal">
+  <div class="mp-header">
+    <h2>🍽️ Meal Plan</h2>
+    <button class="mp-gen" onclick="genMeal()">⚡ Generate</button>
   </div>
-</main>
-
-<!-- Bottom bar -->
-<div class="bar">
-  <div class="bar-grid">
-    <div><div class="bar-v" id="bTick" style="color:var(--green)">0/0</div><div class="bar-l">Ticked</div></div>
-    <div><div class="bar-v" id="bTotal" style="color:var(--gold)">€0.00</div><div class="bar-l">List Total</div></div>
-    <div><div class="bar-v" id="bSaved" style="color:var(--blue)">€0.00</div><div class="bar-l">Saved</div></div>
+  <div style="font-size:.72rem;color:var(--muted);margin-bottom:.6rem;">Generate based on ticked items from:</div>
+  <div class="mp-wk-sel" id="mpWkSel">
+    <button class="mp-pill on" onclick="setMpWk(1)">Week 1</button>
+    <button class="mp-pill" onclick="setMpWk(2)">Week 2</button>
+    <button class="mp-pill" onclick="setMpWk(3)">Week 3</button>
+    <button class="mp-pill" onclick="setMpWk(4)">Week 4</button>
+  </div>
+  <div id="mpBody">
+    <div class="mp-empty"><strong>No meal plan yet</strong>Select a week above, tick your groceries in Shopping, then tap ⚡ Generate.</div>
   </div>
 </div>
 
-<!-- Price modal -->
+<!-- SETTINGS -->
+<div class="screen" id="scSettings">
+  <div style="font-size:1.05rem;font-weight:800;color:var(--cream);margin-bottom:1rem;">⚙️ Settings</div>
+
+  <div class="settings-section">
+    <div class="settings-hd">Appearance</div>
+    <div class="settings-row" onclick="toggleTheme()">
+      <div class="sr-left">
+        <div class="sr-icon">🌙</div>
+        <div><div class="sr-text">Dark Mode</div><div class="sr-sub">Switch between dark and light</div></div>
+      </div>
+      <button class="toggle" id="darkToggle" onclick="toggleTheme();event.stopPropagation()"></button>
+    </div>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-hd">Data</div>
+    <div class="settings-row" onclick="openSave()">
+      <div class="sr-left">
+        <div class="sr-icon">💾</div>
+        <div><div class="sr-text">Save Progress</div><div class="sr-sub">Generate a code — copy it to keep your data</div></div>
+      </div>
+      <div class="sr-right">›</div>
+    </div>
+    <div class="settings-row" onclick="openSave()">
+      <div class="sr-left">
+        <div class="sr-icon">⬆️</div>
+        <div><div class="sr-text">Restore Progress</div><div class="sr-sub">Paste your save code to bring back your data</div></div>
+      </div>
+      <div class="sr-right">›</div>
+    </div>
+    <div class="settings-row" onclick="if(confirm('Clear ALL data for all weeks? This cannot be undone.'))clearAll()">
+      <div class="sr-left">
+        <div class="sr-icon">🗑️</div>
+        <div><div class="sr-text" style="color:var(--red)">Clear All Data</div><div class="sr-sub">Reset everything to default</div></div>
+      </div>
+      <div class="sr-right">›</div>
+    </div>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-hd">About</div>
+    <div class="settings-row" style="cursor:default;">
+      <div class="sr-left">
+        <div class="sr-icon">ℹ️</div>
+        <div><div class="sr-text">Student Budget Tracker</div><div class="sr-sub">☪️ Hyderabadi student · Seelow, Germany</div></div>
+      </div>
+    </div>
+    <div class="settings-row" style="cursor:default;">
+      <div class="sr-left">
+        <div class="sr-icon">📍</div>
+        <div><div class="sr-text">Nearby Stores</div><div class="sr-sub">Aldi · Lidl · Kaufland · Edeka · Netto</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ BOTTOM TAB BAR ═══════════════════ -->
+<nav class="tab-bar">
+  <button class="tab-item on" id="tHome" onclick="goTab('home')">
+    <span class="t-ico">🏠</span><span class="t-lbl">Home</span>
+  </button>
+  <button class="tab-item" id="tShop" onclick="goTab('shop')">
+    <span class="t-ico">🛒</span><span class="t-lbl">Shopping</span>
+  </button>
+  <button class="tab-item" id="tMeal" onclick="goTab('meal')">
+    <span class="t-ico">🍽️</span><span class="t-lbl">Meals</span>
+  </button>
+  <button class="tab-item" id="tSettings" onclick="goTab('settings')">
+    <span class="t-ico">⚙️</span><span class="t-lbl">Settings</span>
+  </button>
+</nav>
+
+<!-- ═══════════════════ MODALS ═══════════════════ -->
+
+<!-- Price -->
 <div class="overlay" id="ovPrice" onclick="bgClose(event,'ovPrice')">
-  <div class="modal">
+  <div class="modal" onclick="event.stopPropagation()">
     <h3>💶 Update Price</h3>
     <p id="priceP">Enter the real price you paid</p>
     <div class="field"><div class="flbl">Price (€)</div><input class="finput num green" type="number" id="priceI" step="0.01" min="0" placeholder="0.00"></div>
-    <div class="mbtns"><button class="mbtn cancel" onclick="close('ovPrice')">Cancel</button><button class="mbtn ok-green" onclick="savePrice()">✓ Save</button></div>
+    <div class="mbtns"><button class="mbtn cancel" onclick="closeModal('ovPrice')">Cancel</button><button class="mbtn ok-green" onclick="savePrice()">✓ Save</button></div>
   </div>
 </div>
 
-<!-- Name modal -->
+<!-- Name -->
 <div class="overlay" id="ovName" onclick="bgClose(event,'ovName')">
-  <div class="modal">
+  <div class="modal" onclick="event.stopPropagation()">
     <h3>✏️ Rename</h3>
     <p id="nameP">Update the product name</p>
     <div class="field"><div class="flbl">Name</div><input class="finput blue" type="text" id="nameI" placeholder="Product name..."></div>
-    <div class="mbtns"><button class="mbtn cancel" onclick="close('ovName')">Cancel</button><button class="mbtn ok-blue" onclick="saveName()">✓ Save</button></div>
+    <div class="mbtns"><button class="mbtn cancel" onclick="closeModal('ovName')">Cancel</button><button class="mbtn ok-blue" onclick="saveName()">✓ Save</button></div>
   </div>
 </div>
 
-<!-- Store modal -->
+<!-- Store -->
 <div class="overlay" id="ovStore" onclick="bgClose(event,'ovStore')">
-  <div class="modal">
+  <div class="modal" onclick="event.stopPropagation()">
     <h3>🏪 Change Store</h3>
     <p id="storeP">Pick where this item is cheaper</p>
     <div class="field"><div class="flbl">Store</div>
@@ -319,16 +686,16 @@ textarea.finput{height:72px;resize:none;font-size:.7rem;font-family:monospace;}
       </select>
     </div>
     <div class="field" id="storeCustomF" style="display:none"><div class="flbl">Custom store name</div><input class="finput purple" type="text" id="storeCI" placeholder="e.g. Turkish Shop Bahnhofstr."></div>
-    <div class="mbtns"><button class="mbtn cancel" onclick="close('ovStore')">Cancel</button><button class="mbtn ok-purple" onclick="saveStore()">✓ Save</button></div>
+    <div class="mbtns"><button class="mbtn cancel" onclick="closeModal('ovStore')">Cancel</button><button class="mbtn ok-purple" onclick="saveStore()">✓ Save</button></div>
   </div>
 </div>
 
-<!-- Add modal -->
+<!-- Add -->
 <div class="overlay" id="ovAdd" onclick="bgClose(event,'ovAdd')">
-  <div class="modal">
+  <div class="modal" onclick="event.stopPropagation()">
     <h3>➕ Add Product</h3>
     <p>Adding to <strong>Week <span id="addWkN">1</span></strong></p>
-    <div class="field"><div class="flbl">Product Name</div><input class="finput blue" type="text" id="addName" placeholder="e.g. Greek Yoghurt 500g"></div>
+    <div class="field"><div class="flbl">Name</div><input class="finput blue" type="text" id="addName" placeholder="e.g. Greek Yoghurt 500g"></div>
     <div class="field"><div class="flbl">Price (€)</div><input class="finput green" type="number" id="addPrice" step="0.01" min="0" placeholder="0.00"></div>
     <div class="field"><div class="flbl">Category</div>
       <select class="finput" id="addCat">
@@ -353,39 +720,56 @@ textarea.finput{height:72px;resize:none;font-size:.7rem;font-family:monospace;}
       </select>
     </div>
     <div class="field" id="addStoreCF" style="display:none"><div class="flbl">Custom store</div><input class="finput purple" type="text" id="addStoreC" placeholder="Store name"></div>
-    <div class="mbtns"><button class="mbtn cancel" onclick="close('ovAdd')">Cancel</button><button class="mbtn ok-green" onclick="doAdd()">➕ Add</button></div>
+    <div class="mbtns"><button class="mbtn cancel" onclick="closeModal('ovAdd')">Cancel</button><button class="mbtn ok-green" onclick="doAdd()">➕ Add</button></div>
   </div>
 </div>
 
-<!-- Remove modal -->
+<!-- Remove -->
 <div class="overlay" id="ovRemove" onclick="bgClose(event,'ovRemove')">
-  <div class="modal">
+  <div class="modal" onclick="event.stopPropagation()">
     <h3>🗑️ Remove Item?</h3>
     <p id="removeP">This will delete the item from the list.</p>
-    <div class="mbtns"><button class="mbtn cancel" onclick="close('ovRemove')">Keep It</button><button class="mbtn ok-red" onclick="doRemove()">🗑️ Remove</button></div>
+    <div class="mbtns"><button class="mbtn cancel" onclick="closeModal('ovRemove')">Keep It</button><button class="mbtn ok-red" onclick="doRemove()">🗑️ Remove</button></div>
   </div>
 </div>
 
-<!-- Save modal -->
+<!-- Save/Load -->
 <div class="overlay" id="ovSave" onclick="bgClose(event,'ovSave')">
-  <div class="modal">
+  <div class="modal" onclick="event.stopPropagation()">
     <h3>💾 Save & Restore</h3>
-    <p>Your data auto-saves in this browser. Use the code below to restore on a different device.</p>
-    <div class="field"><div class="flbl">Your save code (copy this)</div><textarea class="finput" id="saveOut" readonly></textarea></div>
-    <div class="field"><div class="flbl">Paste code to restore</div><textarea class="finput" id="saveIn" placeholder="Paste code here..."></textarea></div>
-    <div class="mbtns"><button class="mbtn cancel" onclick="close('ovSave')">Close</button><button class="mbtn ok-green" onclick="doLoad()">⬆️ Restore</button></div>
+    <p style="color:var(--gold);font-size:.78rem;font-weight:600;">⚠️ Data is NOT saved automatically. Copy your save code to keep your progress.</p>
+
+    <div class="field">
+      <div class="flbl">Step 1 — Copy this save code</div>
+      <textarea class="finput" id="saveOut" readonly onclick="this.select()" style="height:80px;"></textarea>
+      <button onclick="(()=>{const a=document.getElementById('saveOut');a.select();try{document.execCommand('copy');}catch(e){}alert('✅ Code copied! Paste it somewhere safe (Notes, WhatsApp, email).');})()" style="margin-top:.5rem;width:100%;padding:.55rem;border-radius:9px;background:var(--gold);border:none;color:#09091a;font-weight:800;font-size:.82rem;cursor:pointer;">📋 Copy Code</button>
+    </div>
+
+    <div class="field" style="margin-top:.8rem;">
+      <div class="flbl">Step 2 — To restore: paste your code here</div>
+      <textarea class="finput" id="saveIn" placeholder="Paste your save code here then tap Restore..." style="height:80px;"></textarea>
+    </div>
+
+    <div class="mbtns">
+      <button class="mbtn cancel" onclick="closeModal('ovSave')">Close</button>
+      <button class="mbtn ok-green" onclick="doLoad()">⬆️ Restore Data</button>
+    </div>
   </div>
 </div>
 
 <script>
-// ── STORE MAP ──
+// ════════════════════════════════════════════
+//  STORE MAP
+// ════════════════════════════════════════════
 const SM={
   a:{l:'Aldi',c:'sa'},l:{l:'Lidl',c:'sl'},k:{l:'Kaufland',c:'sk'},
   e:{l:'Edeka',c:'se'},n:{l:'Netto',c:'sn'},f:{l:'Frankfurt Oder',c:'sf'},
   any:{l:'Any Store',c:'sany'},c:{l:'Other',c:'sc'}
 };
 
-// ── BUILT-IN DATA ──
+// ════════════════════════════════════════════
+//  BUILT-IN DATA
+// ════════════════════════════════════════════
 const BI={
   1:[
     {cat:'🥩 Protein (Halal)',items:[
@@ -548,72 +932,104 @@ const NOTES={
   3:'💡 <strong>Mid-Month</strong> — Mince instead of chicken for variety! Check pantry levels.',
   4:'🎉 <strong>End Strong!</strong> — Lightest week. Use savings for a halal treat!',
 };
+const WK_NAMES={1:'Foundation Week',2:'Restock Week',3:'Mid-Month Boost',4:'End Strong 🎉'};
 
-// ── STATE ──
-let CW=1, AID=null, RWK=null;
+// ════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════
+let CW=1, MPWK=1, AID=null, RWK=null;
 let ST={chk:{},price:{},name:{},store:{},custom:{1:[],2:[],3:[],4:[]}};
-let REM={1:[],2:[],3:[],4:[]};
+let REM={1:new Set(),2:new Set(),3:new Set(),4:new Set()};
 
-// ── LOCALSTORAGE ──
+// ════════════════════════════════════════════
+//  AUTO SAVE / RESTORE
+// ════════════════════════════════════════════
+const LS_KEY='sbt_data_v1';
+
+function normST(st){
+  if(!st)st={};
+  if(!st.chk)st.chk={};
+  if(!st.price)st.price={};
+  if(!st.name)st.name={};
+  if(!st.store)st.store={};
+  const c={1:[],2:[],3:[],4:[]};
+  [1,2,3,4].forEach(w=>{c[w]=(st.custom&&(st.custom[w]||st.custom[String(w)]))||[];});
+  st.custom=c;
+  return st;
+}
+
 function saveLS(){
   try{
-    const d={ST,REM:Object.fromEntries(Object.entries(REM).map(([k,v])=>[k,[...v]]))};
-    localStorage.setItem('halal_tracker_v3',JSON.stringify(d));
+    const d={
+      ST,
+      REM:Object.fromEntries([1,2,3,4].map(w=>[w,REM[w] instanceof Set?[...REM[w]]:[]])),
+    };
+    localStorage.setItem(LS_KEY,JSON.stringify(d));
   }catch(e){}
 }
+
 function loadLS(){
   try{
-    const raw=localStorage.getItem('halal_tracker_v3');
+    const raw=localStorage.getItem(LS_KEY);
     if(!raw)return;
     const d=JSON.parse(raw);
-    ST=d.ST||ST;
-    if(d.REM){Object.entries(d.REM).forEach(([k,v])=>{REM[k]=new Set(v);});}
-    else{[1,2,3,4].forEach(w=>{REM[w]=new Set(REM[w]||[]);});}
+    if(d.ST)ST=normST(d.ST);
+    [1,2,3,4].forEach(w=>{
+      const src=(d.REM&&(d.REM[w]||d.REM[String(w)]))||[];
+      REM[w]=new Set(Array.isArray(src)?src:[]);
+    });
   }catch(e){[1,2,3,4].forEach(w=>{REM[w]=new Set();});}
 }
 
-// ── HELPERS ──
+// ════════════════════════════════════════════
+//  HELPERS
+// ════════════════════════════════════════════
 function gp(id,def){return ST.price[id]!==undefined?ST.price[id]:def;}
 function gn(id,def){return ST.name[id]||def;}
-function gs(id,def){return ST.store[id]||(SM[def]?{k:def,...SM[def]}:{k:'any',l:'Any',c:'sany'});}
+function gs(id,def){
+  if(ST.store[id])return ST.store[id];
+  const sk=def||'any';
+  return{k:sk,l:SM[sk]?.l||sk,c:SM[sk]?.c||'sany'};
+}
 function storeObj(k,custom=''){
-  if(k==='c'||k==='custom')return{k:'c',l:custom||'Other',c:'sc'};
+  if(k==='c')return{k:'c',l:custom||'Other',c:'sc'};
   return{k,l:SM[k]?.l||k,c:SM[k]?.c||'sany'};
 }
+function wkSpent(w){
+  let s=0;
+  (BI[w]||[]).forEach(cat=>{cat.items.forEach(i=>{if(ST.chk[i.id])s+=gp(i.id,i.p);});});
+  (ST.custom[w]||[]).forEach(i=>{if(ST.chk[i.id])s+=gp(i.id,i.p||0);});
+  return s;
+}
 
-// ── RENDER ──
+// ════════════════════════════════════════════
+//  RENDER
+// ════════════════════════════════════════════
 function render(){
   const con=document.getElementById('panels');
   con.innerHTML='';
   [1,2,3,4].forEach(w=>{
     const div=document.createElement('div');
-    div.id='p'+w;
-    div.style.display=w===CW?'block':'none';
+    div.id='p'+w;div.style.display=w===CW?'block':'none';
+    // Note banner
     const note=document.createElement('div');
-    note.className='cat-hd';
     note.innerHTML=NOTES[w];
-    note.style.cssText='background:var(--odim);border:1px solid rgba(251,191,36,.35);border-radius:10px;padding:.52rem .8rem;font-size:.75rem;color:var(--gold);letter-spacing:0;text-transform:none;border-bottom:none;margin-bottom:.65rem;line-height:1.45;';
+    note.style.cssText='background:var(--odim);border:1px solid rgba(251,191,36,.3);border-radius:10px;padding:.48rem .78rem;font-size:.72rem;color:var(--gold);margin-bottom:.62rem;line-height:1.42;';
     div.appendChild(note);
-
+    // Built-in categories
     BI[w].forEach(cat=>{
       const vis=cat.items.filter(i=>!REM[w].has(i.id));
       if(!vis.length)return;
-      const hd=document.createElement('div');
-      hd.className='cat-hd';hd.textContent=cat.cat;
-      div.appendChild(hd);
-      vis.forEach(item=>{div.appendChild(mkItem(item,w));});
+      const hd=document.createElement('div');hd.className='cat-hd';hd.textContent=cat.cat;div.appendChild(hd);
+      vis.forEach(item=>div.appendChild(mkItem(item,w)));
     });
-
-    // Custom items grouped by category
+    // Custom items
     const grps={};
     (ST.custom[w]||[]).forEach(i=>{const c=i.cat||'📝 Added Items';if(!grps[c])grps[c]=[];grps[c].push(i);});
     Object.entries(grps).forEach(([cat,items])=>{
-      const hd=document.createElement('div');
-      hd.className='cat-hd';hd.textContent=cat;
-      div.appendChild(hd);
-      items.forEach(item=>{div.appendChild(mkItem(item,w));});
+      const hd=document.createElement('div');hd.className='cat-hd';hd.textContent=cat;div.appendChild(hd);
+      items.forEach(item=>div.appendChild(mkItem(item,w)));
     });
-
     con.appendChild(div);
   });
   updateUI();
@@ -625,7 +1041,6 @@ function mkItem(item,w){
   const p=gp(id,dp);
   const so=gs(id,item.s||item.sk||'any');
   const chk=!!ST.chk[id];
-
   const el=document.createElement('div');
   el.className='item'+(chk?' done':'');
   el.dataset.id=id;el.dataset.dp=dp;
@@ -633,9 +1048,7 @@ function mkItem(item,w){
     <button class="chk${chk?' on':''}" onclick="tick('${id}')">${chk?'✓':''}</button>
     <div>
       <div class="iname">${n}</div>
-      <div class="imeta">
-        <span class="stag ${so.c}" onclick="openStore('${id}')">${so.l}</span>
-      </div>
+      <div class="imeta"><span class="stag ${so.c}" onclick="openStore('${id}')">${so.l}</span></div>
     </div>
     <div class="iright">
       <span class="iprice" onclick="openPrice('${id}')">€${p.toFixed(2)}</span>
@@ -649,16 +1062,19 @@ function mkItem(item,w){
   return el;
 }
 
-// ── UI UPDATE ──
+// ════════════════════════════════════════════
+//  UI UPDATE
+// ════════════════════════════════════════════
 function updateUI(){
-  // Weekly
+  // ── Shopping weekly stats ──
   let wList=0,wTick=0,wN=0;
-  const wCards=document.querySelectorAll(`#p${CW} .item`);
-  wCards.forEach(el=>{
+  document.querySelectorAll(`#p${CW} .item`).forEach(el=>{
     const id=el.dataset.id,p=gp(id,parseFloat(el.dataset.dp||0));
     wList+=p;if(ST.chk[id]){wTick+=p;wN++;}
   });
+  const tot=document.querySelectorAll(`#p${CW} .item`).length;
   document.getElementById('wkN').textContent=CW;
+  document.getElementById('shSub').textContent=`Week ${CW} · €25 budget`;
   document.getElementById('wSp').textContent='€'+wTick.toFixed(2);
   const wR=25-wTick;
   document.getElementById('wLf').textContent='€'+Math.max(wR,0).toFixed(2);
@@ -668,128 +1084,162 @@ function updateUI(){
   pf.classList.toggle('over',wTick>25);
   const wc=document.getElementById('wChip');
   if(!wN){wc.className='w-chip';wc.textContent='💰 Tick items to track spending';}
-  else if(wR>0){wc.className='w-chip';wc.innerHTML=`✅ <strong>€${wR.toFixed(2)}</strong> left this week — free for extras!`;}
-  else if(wR===0){wc.className='w-chip warn';wc.textContent='⚖️ Exactly on budget — perfect!';}
-  else{wc.className='w-chip bad';wc.innerHTML=`⚠️ Over by <strong>€${Math.abs(wR).toFixed(2)}</strong> — skip optional items`;}
-  document.getElementById('bTick').textContent=wN+'/'+wCards.length;
-  document.getElementById('bTotal').textContent='€'+wList.toFixed(2);
-  document.getElementById('bSaved').textContent='€'+Math.max(wList-wTick,0).toFixed(2);
+  else if(wR>0){wc.className='w-chip';wc.innerHTML=`✅ <strong>€${wR.toFixed(2)}</strong> left — free for extras!`;}
+  else if(wR===0){wc.className='w-chip warn';wc.textContent='⚖️ Exactly on budget!';}
+  else{wc.className='w-chip bad';wc.innerHTML=`⚠️ Over by <strong>€${Math.abs(wR).toFixed(2)}</strong>`;}
 
-  // Monthly
+  // ── Monthly / Home stats ──
   let mTotal=0;
   [1,2,3,4].forEach(w=>{
-    let ws=0;
-    document.querySelectorAll(`#p${w} .item`).forEach(el=>{
-      const id=el.dataset.id;if(ST.chk[id])ws+=gp(id,parseFloat(el.dataset.dp||0));
-    });
+    const ws=wkSpent(w);
     const pct=Math.min(ws/25*100,100);
     document.getElementById('sf'+w).style.width=pct+'%';
     document.getElementById('sf'+w).classList.toggle('over',ws>25);
-    const sp=document.getElementById('ws'+w);
-    sp.textContent='€'+ws.toFixed(2);
+    const sp=document.getElementById('ws'+w);sp.textContent='€'+ws.toFixed(2);
     sp.style.color=ws>25?'var(--red)':ws>0?'var(--gold)':'var(--green)';
     const lr=25-ws;
     const rd=document.getElementById('wr'+w);
     rd.textContent=lr>=0?`€${lr.toFixed(2)} left`:`€${Math.abs(lr).toFixed(2)} over`;
     rd.style.color=lr<0?'var(--red)':'var(--muted)';
-    document.getElementById('wm'+w).classList.toggle('on',w===CW);
+    document.getElementById('wm'+w).classList.toggle('act',w===CW);
     mTotal+=ws;
   });
-  document.getElementById('mSp').textContent='€'+mTotal.toFixed(2);
   const mr=100-mTotal;
-  document.getElementById('mLf').textContent='€'+Math.max(mr,0).toFixed(2);
-  document.getElementById('mLf').style.color=mr<0?'var(--red)':'var(--green)';
+  [document.getElementById('mSp'),document.getElementById('hMSpent')].forEach(el=>{if(el)el.textContent='€'+mTotal.toFixed(2);});
+  [document.getElementById('mLf'),document.getElementById('hMLeft')].forEach(el=>{if(el){el.textContent='€'+Math.max(mr,0).toFixed(2);el.style.color=mr<0?'var(--red)':'var(--green)';}});
   const mc=document.getElementById('mChip');
-  if(mTotal===0){mc.className='m-chip';mc.innerHTML='💡 Tick items across all weeks to build your monthly picture.';}
-  else if(mr>10){mc.className='m-chip good';mc.innerHTML=`🎉 Great pacing! <strong>€${mr.toFixed(2)}</strong> remaining — you could treat yourself!`;}
-  else if(mr>=0){mc.className='m-chip warn';mc.innerHTML=`⚠️ Getting close — <strong>€${mr.toFixed(2)}</strong> left this month.`;}
-  else{mc.className='m-chip bad';mc.innerHTML=`🚨 Over monthly budget by <strong>€${Math.abs(mr).toFixed(2)}</strong>!`;}
+  if(mTotal===0){mc.className='m-chip';mc.innerHTML='💡 Tap a week to start shopping!';}
+  else if(mr>10){mc.className='m-chip good';mc.innerHTML=`🎉 <strong>€${mr.toFixed(2)}</strong> remaining this month — great pacing!`;}
+  else if(mr>=0){mc.className='m-chip warn';mc.innerHTML=`⚠️ Getting close — <strong>€${mr.toFixed(2)}</strong> left.`;}
+  else{mc.className='m-chip bad';mc.innerHTML=`🚨 Over budget by <strong>€${Math.abs(mr).toFixed(2)}</strong>!`;}
 
-  saveLS();
+  // ── Home quick-access week buttons ──
+  const wb=document.getElementById('wkBtns');
+  if(wb){
+    wb.innerHTML='';
+    [1,2,3,4].forEach(w=>{
+      const ws=wkSpent(w),rem=25-ws,pct=Math.min(ws/25*100,100);
+      const btn=document.createElement('div');btn.className='wk-btn';
+      btn.onclick=()=>goShop(w);
+      btn.innerHTML=`
+        <div class="wb-week">Week ${w}</div>
+        <div class="wb-name">${WK_NAMES[w]}</div>
+        <div class="wb-amt">${ws>0?`€${ws.toFixed(2)} spent`:'Not started'}</div>
+        <div class="wb-bar"><div class="wb-bar-fill${ws>25?' over':''}" style="width:${pct}%"></div></div>`;
+      wb.appendChild(btn);
+    });
+  }
+
+  // ── Greeting ──
+  const h=new Date().getHours();
+  const gr=h<12?'Good morning':'h<17'?'Good afternoon':'Good evening';
+  const el=document.getElementById('greetMsg');
+  if(el)el.textContent=(h<12?'Good morning ☀️':h<17?'Good afternoon 🌤️':'Good evening 🌙');
+
+  
 }
 
-// ── NAVIGATION ──
-function go(w){
+// ════════════════════════════════════════════
+//  NAVIGATION
+// ════════════════════════════════════════════
+const TABS={home:'scHome',shop:'scShop',meal:'scMeal',settings:'scSettings'};
+const TBTNS={home:'tHome',shop:'tShop',meal:'tMeal',settings:'tSettings'};
+let currentTab='home';
+
+function goTab(tab){
+  currentTab=tab;
+  Object.entries(TABS).forEach(([k,sid])=>{
+    document.getElementById(sid).classList.toggle('on',k===tab);
+    document.getElementById(TBTNS[k]).classList.toggle('on',k===tab);
+  });
+  // Update top header subtitle
+  const subs={home:'Overview',shop:`Week ${CW} Shopping`,meal:'Meal Plan',settings:'Settings'};
+  document.getElementById('topSub').textContent=subs[tab]||'';
+  if(tab==='shop')updateUI();
+}
+
+function goShop(w){
+  setWk(w);
+  goTab('shop');
+}
+
+function setWk(w){
   CW=w;
-  // Tabs
-  document.querySelectorAll('.tab').forEach((t,i)=>{
-    t.classList.toggle('on', i<4?(i+1===w):w==='meal');
-  });
-  // Show/hide sections
-  const isMeal=w==='meal';
-  document.getElementById('mCard').style.display=isMeal?'none':'';
-  document.getElementById('wCard').style.display=isMeal?'none':'';
-  document.getElementById('acts').style.display=isMeal?'none':'';
-  document.getElementById('mpMain').classList.toggle('on',isMeal);
-  // Show right panel
-  [1,2,3,4].forEach(n=>{
-    const p=document.getElementById('p'+n);
-    if(p)p.style.display=(!isMeal&&n===w)?'block':'none';
-  });
-  if(!isMeal)updateUI();
+  document.querySelectorAll('.sh-pill').forEach((p,i)=>p.classList.toggle('on',i+1===w));
+  [1,2,3,4].forEach(n=>{const p=document.getElementById('p'+n);if(p)p.style.display=n===w?'block':'none';});
+  updateUI();
 }
 
-// ── TICK ──
+function setMpWk(w){
+  MPWK=w;
+  document.querySelectorAll('.mp-pill').forEach((p,i)=>p.classList.toggle('on',i+1===w));
+  // Clear old meal plan so user sees fresh state for the new week
+  const ticked=getTicked();
+  if(ticked.length===0){
+    document.getElementById('mpBody').innerHTML=`<div class="mp-empty"><strong>No items ticked in Week ${w}</strong>Go to 🛒 Shopping, select Week ${w}, tick the items you bought, then tap ⚡ Generate.</div>`;
+  } else {
+    document.getElementById('mpBody').innerHTML=`<div class="mp-empty"><strong>${ticked.length} items ticked in Week ${w} ✓</strong>Tap ⚡ Generate to build your meal plan.</div>`;
+  }
+}
+
+// ════════════════════════════════════════════
+//  TICK
+// ════════════════════════════════════════════
 function tick(id){
   ST.chk[id]=!ST.chk[id];
   const el=document.querySelector(`.item[data-id="${id}"]`);
   if(el){
     const on=ST.chk[id];
     el.classList.toggle('done',on);
-    const b=el.querySelector('.chk');
-    b.classList.toggle('on',on);b.textContent=on?'✓':'';
-    const nm=el.querySelector('.iname');
-    if(nm)nm.style.textDecoration=on?'line-through':'none';
+    const b=el.querySelector('.chk');b.classList.toggle('on',on);b.textContent=on?'✓':'';
+    const nm=el.querySelector('.iname');if(nm)nm.style.textDecoration=on?'line-through':'none';
   }
   updateUI();
+  saveLS();
 }
+function checkAll(){document.querySelectorAll(`#p${CW} .item`).forEach(e=>{ST.chk[e.dataset.id]=true;});render();setWk(CW);saveLS();}
+function uncheckAll(){document.querySelectorAll(`#p${CW} .item`).forEach(e=>{ST.chk[e.dataset.id]=false;});render();setWk(CW);saveLS();}
+function resetWk(){document.querySelectorAll(`#p${CW} .item`).forEach(e=>{const id=e.dataset.id;ST.chk[id]=false;delete ST.price[id];delete ST.name[id];delete ST.store[id];});render();setWk(CW);saveLS();}
+function clearAll(){ST={chk:{},price:{},name:{},store:{},custom:{1:[],2:[],3:[],4:[]}};[1,2,3,4].forEach(w=>{REM[w]=new Set();});saveLS();render();setWk(1);goTab('home');}
 
-function checkAll(){document.querySelectorAll(`#p${CW} .item`).forEach(e=>{ST.chk[e.dataset.id]=true;});render();go(CW);}
-function uncheckAll(){document.querySelectorAll(`#p${CW} .item`).forEach(e=>{ST.chk[e.dataset.id]=false;});render();go(CW);}
-function resetWk(){document.querySelectorAll(`#p${CW} .item`).forEach(e=>{const id=e.dataset.id;ST.chk[id]=false;delete ST.price[id];delete ST.name[id];delete ST.store[id];});render();go(CW);}
+// ════════════════════════════════════════════
+//  MODALS
+// ════════════════════════════════════════════
+function openModal(id){document.getElementById(id).classList.add('on');}
+function closeModal(id){document.getElementById(id).classList.remove('on');AID=null;}
+function bgClose(e,id){if(e.target===document.getElementById(id))closeModal(id);}
 
-// ── MODALS ──
-function open(id){document.getElementById(id).classList.add('on');}
-function close(id){document.getElementById(id).classList.remove('on');AID=null;}
-function bgClose(e,id){if(e.target===document.getElementById(id))close(id);}
-
-// Price
 function openPrice(id){
   AID=id;
   const el=document.querySelector(`.item[data-id="${id}"]`);
   const cur=gp(id,parseFloat(el?.dataset.dp||0));
   document.getElementById('priceP').textContent=(ST.name[id]||el?.querySelector('.iname')?.textContent||id)+' — enter price you paid:';
   document.getElementById('priceI').value=cur.toFixed(2);
-  open('ovPrice');
-  setTimeout(()=>document.getElementById('priceI').select(),100);
+  openModal('ovPrice');setTimeout(()=>document.getElementById('priceI').select(),100);
 }
 function savePrice(){
-  const v=parseFloat(document.getElementById('priceI').value);
-  if(isNaN(v)||v<0)return;
+  const v=parseFloat(document.getElementById('priceI').value);if(isNaN(v)||v<0)return;
   ST.price[AID]=v;
   const el=document.querySelector(`.item[data-id="${AID}"]`);
   if(el){const d=el.querySelector('.iprice');if(d)d.textContent='€'+v.toFixed(2);}
-  close('ovPrice');updateUI();
+  closeModal('ovPrice');updateUI();saveLS();
 }
 
-// Name
 function openName(id){
   AID=id;
   const el=document.querySelector(`.item[data-id="${id}"]`);
   document.getElementById('nameP').textContent='Rename: '+(ST.name[id]||el?.querySelector('.iname')?.textContent||id);
   document.getElementById('nameI').value=ST.name[id]||el?.querySelector('.iname')?.textContent||'';
-  open('ovName');
-  setTimeout(()=>document.getElementById('nameI').select(),100);
+  openModal('ovName');setTimeout(()=>document.getElementById('nameI').select(),100);
 }
 function saveName(){
   const v=document.getElementById('nameI').value.trim();if(!v)return;
   ST.name[AID]=v;
   const el=document.querySelector(`.item[data-id="${AID}"]`);
   if(el){const nm=el.querySelector('.iname');if(nm)nm.textContent=v;}
-  close('ovName');saveLS();
+  closeModal('ovName');saveLS();
 }
 
-// Store
 document.getElementById('storeI').addEventListener('change',function(){
   document.getElementById('storeCustomF').style.display=this.value==='c'?'block':'none';
 });
@@ -801,19 +1251,17 @@ function openStore(id){
   document.getElementById('storeI').value=so.k in SM?so.k:'c';
   document.getElementById('storeCustomF').style.display=so.k==='c'?'block':'none';
   if(so.k==='c')document.getElementById('storeCI').value=so.l;
-  open('ovStore');
+  openModal('ovStore');
 }
 function saveStore(){
   const k=document.getElementById('storeI').value;
-  const customL=document.getElementById('storeCI').value.trim();
-  const so=storeObj(k,customL);
-  ST.store[AID]=so;
+  const cl=document.getElementById('storeCI').value.trim();
+  const so=storeObj(k,cl);ST.store[AID]=so;
   const el=document.querySelector(`.item[data-id="${AID}"]`);
   if(el){const t=el.querySelector('.stag');if(t){t.className='stag '+so.c;t.textContent=so.l;}}
-  close('ovStore');saveLS();
+  closeModal('ovStore');saveLS();
 }
 
-// Add
 document.getElementById('addCat').addEventListener('change',function(){
   document.getElementById('addCatCF').style.display=this.value==='__custom'?'block':'none';
 });
@@ -822,14 +1270,10 @@ document.getElementById('addStore').addEventListener('change',function(){
 });
 function openAdd(){
   document.getElementById('addWkN').textContent=CW;
-  document.getElementById('addName').value='';
-  document.getElementById('addPrice').value='';
-  document.getElementById('addCat').value='📝 Added Items';
-  document.getElementById('addCatCF').style.display='none';
-  document.getElementById('addStore').value='a';
-  document.getElementById('addStoreCF').style.display='none';
-  open('ovAdd');
-  setTimeout(()=>document.getElementById('addName').focus(),100);
+  document.getElementById('addName').value='';document.getElementById('addPrice').value='';
+  document.getElementById('addCat').value='📝 Added Items';document.getElementById('addCatCF').style.display='none';
+  document.getElementById('addStore').value='a';document.getElementById('addStoreCF').style.display='none';
+  openModal('ovAdd');setTimeout(()=>document.getElementById('addName').focus(),100);
 }
 function doAdd(){
   const name=document.getElementById('addName').value.trim();if(!name)return;
@@ -840,63 +1284,97 @@ function doAdd(){
   const scl=document.getElementById('addStoreC').value.trim();
   const id='x'+Date.now();
   ST.custom[CW].push({id,n:name,p:price,cat,s:sk,sl:scl});
-  close('ovAdd');render();go(CW);
+  closeModal('ovAdd');render();setWk(CW);saveLS();
 }
 
-// Remove
 function openRem(id,w){
   AID=id;RWK=w;
   const el=document.querySelector(`.item[data-id="${id}"]`);
   document.getElementById('removeP').textContent='Remove: '+(ST.name[id]||el?.querySelector('.iname')?.textContent||id)+'?';
-  open('ovRemove');
+  openModal('ovRemove');
 }
 function doRemove(){
-  // Is it built-in?
-  let bi=false;
-  BI[RWK]?.forEach(cat=>{if(cat.items.find(i=>i.id===AID))bi=true;});
-  if(bi){if(!REM[RWK])REM[RWK]=new Set();REM[RWK].add(AID);}
-  else{ST.custom[RWK]=(ST.custom[RWK]||[]).filter(i=>i.id!==AID);}
+  let bi=false;(BI[RWK]||[]).forEach(cat=>{if(cat.items.find(i=>i.id===AID))bi=true;});
+  if(bi){REM[RWK].add(AID);}else{ST.custom[RWK]=(ST.custom[RWK]||[]).filter(i=>i.id!==AID);}
   delete ST.chk[AID];delete ST.price[AID];delete ST.name[AID];delete ST.store[AID];
-  close('ovRemove');render();go(CW);
+  closeModal('ovRemove');render();setWk(CW);saveLS();
 }
 
 // Save/Load
+function toB64(str){return btoa(String.fromCharCode(...new TextEncoder().encode(str)));}
+function fromB64(b64){
+  try{return new TextDecoder().decode(Uint8Array.from(atob(b64),c=>c.charCodeAt(0)));}
+  catch(e){try{return decodeURIComponent(escape(atob(b64)));}catch(e2){return null;}}
+}
+function safeSpread(v){
+  if(v instanceof Set)return[...v];
+  if(Array.isArray(v))return v;
+  return[];
+}
 function openSave(){
-  const d={ST,REM:Object.fromEntries(Object.entries(REM).map(([k,v])=>[k,[...v]]))};
-  const enc=btoa(unescape(encodeURIComponent(JSON.stringify(d))));
-  document.getElementById('saveOut').value=enc;
+  try{
+    const d={ST,REM:Object.fromEntries([1,2,3,4].map(w=>[w,safeSpread(REM[w])]))};
+    const enc=toB64(JSON.stringify(d));
+    document.getElementById('saveOut').value=enc;
+  }catch(e){
+    document.getElementById('saveOut').value='Error: '+e.message;
+  }
   document.getElementById('saveIn').value='';
-  open('ovSave');
-  setTimeout(()=>{const a=document.getElementById('saveOut');a.select();try{document.execCommand('copy');}catch(e){}},150);
+  openModal('ovSave');
+  setTimeout(()=>{
+    const a=document.getElementById('saveOut');
+    a.select();
+    try{document.execCommand('copy');}catch(e){}
+  },200);
 }
 function doLoad(){
+  const raw=document.getElementById('saveIn').value.trim();
+  if(!raw){alert('Please paste your save code in the box first, then tap Restore.');return;}
   try{
-    const raw=document.getElementById('saveIn').value.trim();if(!raw)return;
-    const d=JSON.parse(decodeURIComponent(escape(atob(raw))));
-    ST=d.ST;
-    [1,2,3,4].forEach(w=>{REM[w]=new Set((d.REM&&d.REM[w])||[]);});
-    close('ovSave');render();go(CW);
-  }catch(e){alert('Invalid save code.');}
+    const json=fromB64(raw);
+    if(!json){alert('Could not decode the save code. Make sure you copied the full code.');return;}
+    const d=JSON.parse(json);
+    if(!d||!d.ST){alert('This does not look like a valid save code.');return;}
+    ST=normST(d.ST);
+    [1,2,3,4].forEach(w=>{
+      const src=(d.REM&&(d.REM[w]||d.REM[String(w)]))||[];
+      REM[w]=new Set(Array.isArray(src)?src:[]);
+    });
+    saveLS();
+    closeModal('ovSave');
+    render();
+    setWk(CW);
+    goTab('home');
+    setTimeout(()=>alert('✅ Data restored successfully!'),200);
+  }catch(e){
+    alert('Failed to restore: '+e.message+'\n\nMake sure you pasted the complete save code.');
+  }
 }
 
-// ── MEAL PLAN ──
+// ════════════════════════════════════════════
+//  MEAL PLAN
+// ════════════════════════════════════════════
 function getTicked(){
-  const items=[],seen=new Set();
-  [1,2,3,4].forEach(w=>{
-    BI[w].forEach(cat=>{
-      cat.items.forEach(i=>{
-        if(ST.chk[i.id]&&(!REM[w]||!REM[w].has(i.id))){
-          const k=(ST.name[i.id]||i.n).toLowerCase();
-          if(!seen.has(k)){seen.add(k);items.push({id:i.id,n:ST.name[i.id]||i.n,cat:cat.cat});}
-        }
-      });
-    });
-    (ST.custom[w]||[]).forEach(i=>{
-      if(ST.chk[i.id]){
-        const k=(ST.name[i.id]||i.n).toLowerCase();
-        if(!seen.has(k)){seen.add(k);items.push({id:i.id,n:ST.name[i.id]||i.n,cat:i.cat||''});}
+  // Strictly returns ticked items from MPWK only — each week has its own separate meal plan
+  const items=[], seen=new Set();
+  const w=MPWK;
+
+  // Safe helper — REM[w] might not be a Set in all edge cases
+  const remHas=(id)=>(REM[w] instanceof Set) ? REM[w].has(id) : false;
+
+  (BI[w]||[]).forEach(cat=>{
+    cat.items.forEach(i=>{
+      if(ST.chk[i.id] && !remHas(i.id)){
+        const k=(ST.name[i.id]||i.n).toLowerCase().trim();
+        if(!seen.has(k)){seen.add(k);items.push({id:i.id,n:ST.name[i.id]||i.n});}
       }
     });
+  });
+  (ST.custom[w]||[]).forEach(i=>{
+    if(ST.chk[i.id]){
+      const k=(ST.name[i.id]||i.n).toLowerCase().trim();
+      if(!seen.has(k)){seen.add(k);items.push({id:i.id,n:ST.name[i.id]||i.n});}
+    }
   });
   return items;
 }
@@ -907,32 +1385,22 @@ function genMeal(){
   const ing=getTicked();
   const body=document.getElementById('mpBody');
   if(!ing.length){
-    body.innerHTML='<div class="mp-empty"><strong>No items ticked!</strong>Go to any week tab, tick items you bought, then tap ⚡ Generate.</div>';
+    body.innerHTML=`<div class="mp-empty"><strong>No items ticked in Week ${MPWK}</strong>
+    Go to <strong>🛒 Shopping → Week ${MPWK}</strong>, tick the items you bought this week, then come back and tap ⚡ Generate.<br><br>
+    <span style="font-size:.72rem;color:var(--muted)">Each week's meal plan is separate — based only on what you ticked in that specific week.</span></div>`;
     return;
   }
-
-  const hC=has(ing,['chicken','hühner']);
-  const hM=has(ing,['mince','minced','hack','keema']);
-  const hT=has(ing,['tuna','thunfisch']);
-  const hE=has(ing,['egg','eier','eggs']);
-  const hL=has(ing,['lentil','linsen','dal']);
-  const hCh=has(ing,['chickpea','kichererbsen','chana']);
-  const hR=has(ing,['rice','reis','basmati']);
-  const hBr=has(ing,['bread','brot']);
-  const hPa=has(ing,['pasta','nudel']);
-  const hO=has(ing,['oat','haferflocken']);
-  const hMi=has(ing,['milk','milch','vollmilch']);
-  const hY=has(ing,['yoghurt','joghurt','yogurt']);
-  const hBn=has(ing,['banana','banane']);
-  const hAp=has(ing,['apple','apfel']);
-  const hTo=has(ing,['tomato','tomate']);
-  const hOn=has(ing,['onion','zwiebel']);
-  const hGa=has(ing,['garlic','knoblauch']);
-  const hCa=has(ing,['carrot','karotte']);
-  const hSp=has(ing,['spinach','spinat']);
-  const hW=has(ing,['walnut','walnuss']);
-  const hCo=has(ing,['chocolate','schokolade']);
-  const hPb=has(ing,['peanut','erdnuss']);
+  const hC=has(ing,['chicken','hühner']);const hM=has(ing,['mince','hack','keema']);
+  const hT=has(ing,['tuna','thunfisch']);const hE=has(ing,['egg','eier','eggs']);
+  const hL=has(ing,['lentil','linsen','dal']);const hCh=has(ing,['chickpea','kichererbsen','chana']);
+  const hR=has(ing,['rice','reis','basmati']);const hBr=has(ing,['bread','brot']);
+  const hPa=has(ing,['pasta','nudel']);const hO=has(ing,['oat','haferflocken']);
+  const hMi=has(ing,['milk','milch']);const hY=has(ing,['yoghurt','joghurt']);
+  const hBn=has(ing,['banana','banane']);const hAp=has(ing,['apple','apfel']);
+  const hTo=has(ing,['tomato','tomate']);const hOn=has(ing,['onion','zwiebel']);
+  const hGa=has(ing,['garlic','knoblauch']);const hCa=has(ing,['carrot','karotte']);
+  const hSp=has(ing,['spinach','spinat']);const hW=has(ing,['walnut','walnuss']);
+  const hCo=has(ing,['chocolate','schokolade']);const hPb=has(ing,['peanut','erdnuss']);
   const hSc=has(ing,['garam','masala','cumin','jeera','turmeric','kurkuma','paprika']);
   const hLe=has(ing,['lemon','zitrone']);
 
@@ -940,201 +1408,180 @@ function genMeal(){
   const B=t=>`<span class="mt mtb">${t}</span>`;
   const E=t=>`<span class="mt mte">${t}</span>`;
   const H=t=>`<span class="mt mth">${t}</span>`;
-  const m=(lbl,name,desc,tags)=>`
-    <div class="meal">
-      <div class="meal-row">
-        <span class="meal-lbl">${lbl}</span>
-        <div>
-          <div class="meal-name">${name}</div>
-          <div class="meal-desc">${desc}</div>
-          <div class="meal-tags">${tags.join('')}</div>
-        </div>
-      </div>
-    </div>`;
+  const m=(lbl,name,desc,tags)=>`<div class="meal"><div class="meal-row"><span class="meal-lbl">${lbl}</span><div><div class="meal-name">${name}</div><div class="meal-desc">${desc}</div><div class="meal-tags">${tags.join('')}</div></div></div></div>`;
 
   const days=[
     {name:'Monday',c:'c0',meals:[
-      m('🌅 Breakfast',
-        hO&&hMi?'Masala Oats'+(hBn?' + Banana':''):hE&&hBr?'Spiced Egg Toast':'Bread & Tea',
-        hO?`Oats + milk${hBn?' + banana':''} + cardamom`:hE?'Scrambled eggs + spices + bread':'Bread + peanut butter + tea',
-        [E('Energy'),B('Brain')]),
-      m('☀️ Lunch',
-        hL&&hR?'Dal Tadka + Rice':hCh&&hR?'Chana Masala + Rice':'Grain Bowl',
-        hL?`Lentils + ${hOn?'onions + ':''}${hGa?'garlic + ':''}${hSc?'Garam Masala':'spices'}${hR?' + rice':''}`:
-        hCh?`Chickpeas + ${hTo?'tomatoes + ':''}${hSc?'spices':'seasoning'}${hR?' + rice':''}`:
-        'Grains + vegetables + spices',
-        [P('Protein'),E('Energy'),H('Halal ✓')]),
-      m('🌙 Dinner',
-        hE&&hTo?'Egg Bhurji + Bread':hT?'Tuna Stir-fry':'Lentil Soup',
-        hE?`Eggs + ${hTo?'tomatoes + ':''}${hOn?'onions + ':''}spices`:
-        hT?`Tuna + onions + ${hSc?'spices':''} + rice`:
-        `Lentil soup + spices${hLe?' + lemon':''}`,
-        [P('Protein'),E('Fiber')]),
-      m('🍎 Snack',
-        hAp&&hW?'Apple + Walnuts':hBn&&hPb?'Banana + Peanut Butter':hCo?'Dark Chocolate':'Fruit',
-        'Brain-boosting snack for study focus',[B('Omega-3'),E('Energy')]),
+      m('🌅 Breakfast',hO&&hMi?'Masala Oats'+(hBn?' + Banana':''):hE&&hBr?'Spiced Egg Toast':'Bread & Tea',
+        hO?`Oats + milk${hBn?' + banana':''} + cardamom`:hE?'Eggs + spices + bread':'Bread + tea',[E('Energy'),B('Brain')]),
+      m('☀️ Lunch',hL&&hR?'Dal Tadka + Rice':hCh&&hR?'Chana Masala + Rice':'Grain Bowl',
+        hL?`Lentils + ${hOn?'onions + ':''}${hSc?'Garam Masala':'spices'}${hR?' + rice':''}`:hCh?`Chickpeas + ${hTo?'tomatoes + ':''}${hSc?'spices':'seasoning'}${hR?' + rice':''}`:' Grains + veg',[P('Protein'),E('Energy'),H('Halal ✓')]),
+      m('🌙 Dinner',hE&&hTo?'Egg Bhurji + Bread':hT?'Tuna Rice':'Lentil Soup',
+        hE?`Eggs + ${hTo?'tomatoes + ':''}spices`:hT?`Tuna + ${hR?'rice':''}`:` Lentil soup${hLe?' + lemon':''}`,[P('Protein'),E('Fiber')]),
+      m('🍎 Snack',hAp&&hW?'Apple + Walnuts':hBn&&hPb?'Banana + Peanut Butter':hCo?'Dark Chocolate':'Fruit','Brain-boosting study snack',[B('Omega-3'),E('Energy')]),
     ]},
     {name:'Tuesday',c:'c1',meals:[
-      m('🌅 Breakfast',
-        hE&&hBr?'Egg + Bread + Yoghurt':hO&&hBn?'Banana Oat Bowl':'Bread & Tea',
-        hE?`Fried/boiled eggs + bread${hY?' + yoghurt':''}`:hO?'Oats + banana + honey':'Bread + tea',
-        [P('Protein'),E('Energy')]),
-      m('☀️ Lunch',
-        hC&&hR?'Chicken Curry + Rice':hM&&hR?'Keema + Rice':hL&&hR?'Dal + Rice':'Grain Bowl',
-        hC?`Halal chicken + ${hTo?'tomatoes + ':''}${hSc?'Garam Masala + Turmeric':'spices'} + rice`:
-        hM?`Halal mince + ${hCa?'carrots + ':''}${hSc?'spices':'seasoning'} + rice`:
-        `Lentils + vegetables + spices${hR?' + rice':''}`,
-        [P('Protein'),H('Halal ✓'),E('Energy')]),
-      m('🌙 Dinner',
-        hT&&hPa?'Desi Tuna Pasta':hE&&hSp?'Spinach & Egg':'Vegetable Rice',
-        hT&&hPa?`Tuna + pasta + ${hOn?'onions + ':''}${hLe?'lemon':''}`:
-        hE&&hSp?`Spinach + eggs + ${hGa?'garlic + ':''}cumin`:
-        'Rice + vegetables + spices',
-        [P('Protein'),B('Omega-3')]),
-      m('🍌 Snack',
-        hBn&&hPb?'Banana + Peanut Butter':hAp?'Apple':'Tea','Pre-study energy boost',[E('Energy')]),
+      m('🌅 Breakfast',hE&&hBr?'Egg + Bread + Yoghurt':hO&&hBn?'Banana Oat Bowl':'Bread & Tea',
+        hE?`Eggs + bread${hY?' + yoghurt':''}`:hO?'Oats + banana':'Bread + tea',[P('Protein'),E('Energy')]),
+      m('☀️ Lunch',hC&&hR?'Chicken Curry + Rice':hM&&hR?'Keema + Rice':hL&&hR?'Dal + Rice':'Grain Bowl',
+        hC?`Halal chicken + ${hSc?'Garam Masala':'spices'} + rice`:hM?`Halal mince + ${hCa?'carrots + ':''}${hSc?'spices':'seasoning'} + rice`:`Lentils + veg${hR?' + rice':''}`,[P('Protein'),H('Halal ✓'),E('Energy')]),
+      m('🌙 Dinner',hT&&hPa?'Desi Tuna Pasta':hE&&hSp?'Spinach & Egg':'Veg Rice',
+        hT&&hPa?`Tuna + pasta + ${hLe?'lemon':''}`:hE&&hSp?`Spinach + eggs + ${hGa?'garlic':''}`:' Rice + veg',[P('Protein'),B('Omega-3')]),
+      m('🍌 Snack',hBn&&hPb?'Banana + Peanut Butter':hAp?'Apple':'Tea','Pre-study energy',[E('Energy')]),
     ]},
     {name:'Wednesday',c:'c2',meals:[
-      m('🌅 Breakfast',
-        hO&&hW&&hY?'Overnight Oats + Walnuts':hO?'Oat Porridge':hE?'Boiled Eggs':'Bread + Tea',
-        hO?`Oats + ${hY?'yoghurt + ':''}${hW?'walnuts + ':''}${hBn?'banana':'honey'}`:
-        hE?'Boiled eggs + tea with milk':'Bread + peanut butter',
-        [B('Brain'),E('Fiber')]),
-      m('☀️ Lunch',
-        hCh&&hTo?'Chana Masala + Rice':hL&&hSp?'Dal + Spinach':'Lentil Bowl',
-        hCh?`Chickpeas + ${hTo?'tomatoes + ':''}Garam Masala${hR?' + rice':''}`:
-        `Lentils + ${hSp?'spinach + ':''}spices${hR?' + rice':''}`,
-        [E('Fiber'),P('Protein'),H('Halal ✓')]),
-      m('🌙 Dinner',
-        hSp&&hE?'Garlic Spinach & Egg':hT?'Tuna Bowl':'Vegetable Soup',
-        hSp&&hE?`Spinach + eggs + ${hGa?'garlic + ':''}cumin`:
-        hT?`Tuna + ${hR?'rice + ':''}${hLe?'lemon':''}`:
-        'Mixed vegetable soup + spices',
-        [P('Protein'),B('Iron')]),
-      m('🍫 Snack',
-        hCo&&hAp?'Dark Chocolate + Apple':hW?'Walnuts':'Tea',
-        'Mood booster + antioxidants for mental health',[B('Mood ↑'),E('Antioxidants')]),
+      m('🌅 Breakfast',hO&&hW&&hY?'Overnight Oats + Walnuts':hO?'Oat Porridge':hE?'Boiled Eggs':'Bread + Tea',
+        hO?`Oats + ${hY?'yoghurt + ':''}${hW?'walnuts + ':''}${hBn?'banana':'honey'}`:hE?'Boiled eggs + tea':'Bread + peanut butter',[B('Brain'),E('Fiber')]),
+      m('☀️ Lunch',hCh&&hTo?'Chana Masala + Rice':hL&&hSp?'Dal + Spinach':'Lentil Bowl',
+        hCh?`Chickpeas + ${hTo?'tomatoes + ':''}Garam Masala${hR?' + rice':''}`:` Lentils + ${hSp?'spinach + ':''}spices${hR?' + rice':''}`,[E('Fiber'),P('Protein'),H('Halal ✓')]),
+      m('🌙 Dinner',hSp&&hE?'Garlic Spinach & Egg':hT?'Tuna Bowl':'Veg Soup',
+        hSp&&hE?`Spinach + eggs + ${hGa?'garlic':''}`:hT?`Tuna + ${hR?'rice + ':''}${hLe?'lemon':''}`:' Mixed veg soup',[P('Protein'),B('Iron')]),
+      m('🍫 Snack',hCo&&hAp?'Dark Choc + Apple':hW?'Walnuts':'Tea','Mood booster + antioxidants',[B('Mood ↑')]),
     ]},
     {name:'Thursday',c:'c3',meals:[
-      m('🌅 Breakfast',
-        hE&&hBr&&hSc?'Masala Egg Toast':hY&&hBn?'Yoghurt Bowl':'Bread & Tea',
-        hE?`Omelette + ${hOn?'onions + ':''}turmeric + paprika${hBr?' + bread':''}`:
-        hY?`Yoghurt + banana${hPb?' + peanut butter':''}`:
-        'Bread + tea',
-        [P('Protein'),E('Energy')]),
-      m('☀️ Lunch',
-        hM&&hR?'Keema Curry + Rice':hC&&hR?'Chicken Curry + Rice':hL?'Dal + Rice':'Rice Bowl',
-        hM?`Halal mince + ${hOn?'onions + ':''}${hTo?'tomatoes + ':''}Garam Masala + rice`:
-        hC?`Halal chicken + spices + rice`:
-        `Lentils + spices${hR?' + rice':''}`,
-        [P('Protein'),H('Halal ✓'),E('Iron')]),
-      m('🌙 Dinner',
-        hL&&hCa?'Lentil & Carrot Soup':hE&&hSp?'Spinach Egg Bowl':'Vegetable Soup',
-        hL?`Lentils + ${hCa?'carrots + ':''}turmeric${hLe?' + lemon':''}`:
-        hE&&hSp?`Spinach + eggs + ${hGa?'garlic':'seasoning'}`:
-        'Vegetables + spices',
-        [E('Fiber'),E('Energy')]),
-      m('🥕 Snack',
-        hCa&&hPb?'Carrot Sticks + Peanut Butter':hAp?'Apple + Walnuts':'Tea',
-        'Vitamin A + healthy fats',[B('Vitamin A'),E('Energy')]),
+      m('🌅 Breakfast',hE&&hBr&&hSc?'Masala Egg Toast':hY&&hBn?'Yoghurt Bowl':'Bread & Tea',
+        hE?`Omelette + ${hOn?'onions + ':''}turmeric${hBr?' + bread':''}`:hY?`Yoghurt + banana${hPb?' + PB':''}`:' Bread + tea',[P('Protein'),E('Energy')]),
+      m('☀️ Lunch',hM&&hR?'Keema Curry + Rice':hC&&hR?'Chicken Curry + Rice':hL?'Dal + Rice':'Rice Bowl',
+        hM?`Halal mince + ${hTo?'tomatoes + ':''}Garam Masala + rice`:hC?`Halal chicken + spices + rice`:`Lentils + spices${hR?' + rice':''}`,[P('Protein'),H('Halal ✓'),E('Iron')]),
+      m('🌙 Dinner',hL&&hCa?'Lentil & Carrot Soup':hE&&hSp?'Spinach Egg Bowl':'Veg Soup',
+        hL?`Lentils + ${hCa?'carrots + ':''}turmeric${hLe?' + lemon':''}`:hE&&hSp?`Spinach + eggs`:' Vegetables + spices',[E('Fiber'),E('Energy')]),
+      m('🥕 Snack',hCa&&hPb?'Carrot + Peanut Butter':hAp?'Apple + Walnuts':'Tea','Vitamin A + healthy fats',[B('Vitamin A')]),
     ]},
     {name:'Friday 🕌',c:'c4',meals:[
-      m('🌅 Breakfast',
-        hO&&hBn&&hW?'Banana Oat Smoothie Bowl':hE&&hBr?'Egg Toast':'Oat Porridge',
-        hO?`Oats + banana + yoghurt + ${hW?'walnuts':'honey'} — Jumu'ah energy boost! 🎉`:
-        hE?'Eggs + bread — power breakfast':
-        'Oats + honey',
-        [E('Energy'),B('Brain')]),
-      m('☀️ Lunch',
-        hC&&hR&&hSc?'🍚 Chicken Biryani — Friday Special':hM&&hR?'Keema Rice Feast':hL&&hR?'Dal Chawal':'Rice Dish',
-        hC?`Halal chicken + basmati rice + Garam Masala + Turmeric + onions 🎉 Your Friday celebration meal!`:
-        hM?'Halal mince + rice + spices — Friday feast':
-        'Dal + rice — simple and satisfying',
-        [P('Protein'),H('Halal ✓'),E('Energy')]),
-      m('🌙 Dinner',
-        hT&&hBr?'Tuna Salad + Bread':hE?'Light Egg Dish':'Vegetable Bowl',
-        `Light dinner after Jumu'ah lunch — ${hT?'tuna + onions + lemon + bread':hE?'light eggs + vegetables':'vegetables + spices'}`,
-        [P('Protein'),B('Omega-3')]),
-      m('🍫 Snack',
-        hCo&&hW?'Dark Chocolate + Walnuts':'Tea with Snack',
-        "It's Friday — treat yourself! 🎉",[B('Mood ↑')]),
+      m('🌅 Breakfast',hO&&hBn&&hW?'Banana Oat Bowl':hE&&hBr?'Egg Toast':'Oat Porridge',
+        hO?`Oats + banana + ${hW?'walnuts':'honey'} — Jumu'ah boost! 🎉`:hE?'Eggs + bread':'Oats + honey',[E('Energy'),B('Brain')]),
+      m('☀️ Lunch',hC&&hR&&hSc?'🍚 Chicken Biryani — Friday Special!':hM&&hR?'Keema Rice Feast':hL&&hR?'Dal Chawal':'Rice',
+        hC?'Halal chicken + basmati + Garam Masala + Turmeric 🎉 Friday celebration!':hM?'Halal mince + rice + spices':'Dal + rice',[P('Protein'),H('Halal ✓'),E('Energy')]),
+      m('🌙 Dinner',hT&&hBr?'Tuna Salad + Bread':hE?'Light Eggs':'Veg Bowl',
+        `Light dinner after Jumu'ah lunch — ${hT?'tuna + lemon + bread':hE?'eggs + veg':'veg + spices'}`,[P('Protein'),B('Omega-3')]),
+      m('🍫 Snack',hCo&&hW?'Dark Choc + Walnuts':'Tea',"Friday treat! 🎉",[B('Mood ↑')]),
     ]},
     {name:'Saturday',c:'c5',meals:[
-      m('🌅 Breakfast',
-        hE&&hBr?'Egg Paratha / Toast':hO?'Oat Porridge':'Bread & Tea',
-        hE?`Eggs + ${hBr?'flatbread + ':''}spices — classic Hyderabadi morning`:
-        `Oats + ${hBn?'banana + ':''}${hY?'yoghurt':'honey'}`,
-        [P('Protein'),E('Energy')]),
-      m('☀️ Lunch',
-        hM&&hPa?'Desi Keema Pasta (Fusion 🇩🇪🇮🇳)':hC&&hR?'Chicken Bowl':hCh&&hSp?'Chana Palak + Rice':'Grain Bowl',
-        hM&&hPa?`Halal mince + pasta + ${hTo?'tomatoes + ':''}Garam Masala — Desi-German fusion!`:
-        hC?`Halal chicken + rice + spices`:
-        `Chickpeas + ${hSp?'spinach + ':''}cumin${hR?' + rice':''}`,
-        [P('Protein'),H('Halal ✓')]),
-      m('🌙 Dinner',
-        hCh&&hSp?'Chana & Spinach Bowl':hL?'Dal + Rice':'Vegetable Rice',
-        hCh?`Chickpeas + ${hSp?'spinach + ':''}${hGa?'garlic + ':''}cumin${hR?' + rice':''}`:
-        `Lentils + spices${hR?' + rice':''}`,
-        [P('Protein'),E('Fiber'),B('Iron')]),
-      m('🍌 Snack',
-        hBn&&hY?'Banana + Yoghurt':hAp?'Apple':'Tea',
-        'Probiotics + potassium — weekend recovery',[E('Gut Health')]),
+      m('🌅 Breakfast',hE&&hBr?'Egg Paratha / Toast':hO?'Oat Porridge':'Bread & Tea',
+        hE?`Eggs + ${hBr?'flatbread + ':''}spices — classic Hyderabadi!`:`Oats + ${hBn?'banana':'honey'}`,[P('Protein'),E('Energy')]),
+      m('☀️ Lunch',hM&&hPa?'Keema Pasta 🇩🇪🇮🇳':hC&&hR?'Chicken Bowl':hCh&&hSp?'Chana Palak + Rice':'Grain Bowl',
+        hM&&hPa?`Halal mince + pasta + ${hTo?'tomatoes + ':''}Garam Masala — Desi-German fusion!`:hC?`Halal chicken + rice`:` Chickpeas + ${hSp?'spinach + ':''}cumin${hR?' + rice':''}`,[P('Protein'),H('Halal ✓')]),
+      m('🌙 Dinner',hCh&&hSp?'Chana Palak Bowl':hL?'Dal + Rice':'Veg Rice',
+        hCh?`Chickpeas + ${hSp?'spinach + ':''}${hGa?'garlic':''}${hR?' + rice':''}`:` Lentils${hR?' + rice':''}`,[P('Protein'),E('Fiber')]),
+      m('🍌 Snack',hBn&&hY?'Banana + Yoghurt':hAp?'Apple':'Tea','Probiotics + potassium',[E('Gut Health')]),
     ]},
     {name:'Sunday',c:'c6',meals:[
-      m('🌅 Breakfast',
-        hO&&hY?'Overnight Oats (prep Saturday night)':hBn&&hMi?'Banana Smoothie':'Bread & Tea',
-        hO?`Oats + yoghurt + ${hBn?'banana + ':''}${hW?'walnuts':'honey'} — zero effort Sunday!`:
-        hBn?'Banana + milk smoothie':
-        `Bread + ${hPb?'peanut butter + ':''}tea`,
-        [E('Energy'),E('Fiber')]),
-      m('☀️ Lunch',
-        hL&&hSp&&hCa?'Mixed Vegetable Dal + Rice':hL&&hR?'Dal + Rice':hCh&&hR?'Chana + Rice':'Grain Bowl',
-        hL?`Lentils + ${hCa?'carrots + ':''}${hSp?'spinach + ':''}${hOn?'onions + ':''}Garam Masala${hR?' + rice':''}`:
-        `Chickpeas + spices${hR?' + rice':''}`,
-        [E('Fiber'),P('Protein'),E('Energy')]),
-      m('🌙 Dinner',
-        hE&&hBr&&hPb?'Egg + Peanut Butter Toast + Apple':hT&&hBr?'Tuna + Bread':'Simple Bowl',
-        hE?'Boiled egg + peanut butter toast + apple':
-        hT?'Tuna + bread':
-        'Leftovers + vegetables',
-        [P('Protein'),E('Energy')]),
-      m('☕ Snack',
-        hMi?'Masala Chai + Dark Chocolate':'Tea + Rest',
-        `Tea${hMi?' + milk + cardamom':''}${hCo?' + dark chocolate squares':''}. Relax, you made it through the week! 🙏`,
-        [B('Mood ↑')]),
+      m('🌅 Breakfast',hO&&hY?'Overnight Oats (prep Sat)':hBn&&hMi?'Banana Smoothie':'Bread & Tea',
+        hO?`Oats + yoghurt + ${hBn?'banana + ':''}${hW?'walnuts':'honey'} — zero effort Sunday!`:hBn?'Banana + milk':'Bread + tea',[E('Energy'),E('Fiber')]),
+      m('☀️ Lunch',hL&&hSp&&hCa?'Mixed Veg Dal + Rice':hL&&hR?'Dal + Rice':hCh&&hR?'Chana + Rice':'Grain Bowl',
+        hL?`Lentils + ${hCa?'carrots + ':''}${hSp?'spinach + ':''}${hSc?'Garam Masala':'spices'}${hR?' + rice':''}`:` Chickpeas + spices${hR?' + rice':''}`,[E('Fiber'),P('Protein')]),
+      m('🌙 Dinner',hE&&hPb?'Egg + PB Toast':hT&&hBr?'Tuna + Bread':'Simple Bowl',
+        hE?'Boiled egg + peanut butter toast':hT?'Tuna + bread':'Leftovers + veg',[P('Protein'),E('Energy')]),
+      m('☕ Snack',hMi?'Masala Chai':'Tea + Rest',`Tea${hMi?' + milk + cardamom':''}${hCo?' + dark chocolate':''}. Relax! 🙏`,[B('Mood ↑')]),
     ]},
   ];
 
-  let html=`<div class="mp-note">☪️ Built from your <strong>${ing.length} ticked ingredients</strong> — all meals are halal. Tap ⚡ Generate any time you update your shopping.</div>`;
-  html+=`<div class="ing-box"><div class="ing-title">🛒 Ingredients in this plan</div><div class="ing-tags">`;
+  let html=`<div class="mp-note">🛒 Built from <strong>${ing.length} ticked items in Week ${MPWK}</strong> — only what you actually bought this week.</div>`;
+  html+=`<div class="ing-box"><div class="ing-title">Your Ingredients</div><div class="ing-tags">`;
   ing.forEach(i=>{html+=`<span class="ing-tag">${i.n}</span>`;});
   html+=`</div></div>`;
-
-  days.forEach(day=>{
-    html+=`<div class="day-card"><div class="day-hd ${day.c}"><span class="day-name">${day.name}</span></div><div class="day-meals">${day.meals.join('')}</div></div>`;
-  });
-
-  body.innerHTML=html;
+  days.forEach(d=>{html+=`<div class="day-card"><div class="day-hd ${d.c}"><div class="day-name">${d.name}</div></div><div class="day-meals">${d.meals.join('')}</div></div>`;});
+  document.getElementById('mpBody').innerHTML=html;
 }
 
-// ── KEYBOARD ──
+// ════════════════════════════════════════════
+//  THEME
+// ════════════════════════════════════════════
+function applyTheme(mode){
+  const isLight=mode==='light';
+  document.body.classList.toggle('light',isLight);
+  document.getElementById('themeBtn').textContent=isLight?'☀️':'🌙';
+  const dt=document.getElementById('darkToggle');if(dt)dt.classList.toggle('on',!isLight);
+  const meta=document.querySelector('meta[name="theme-color"]');
+  if(meta)meta.content=isLight?'#f0f2f8':'#09091a';
+}
+function toggleTheme(){
+  const next=document.body.classList.contains('light')?'dark':'light';
+  localStorage.setItem('_theme',next);applyTheme(next);
+}
+
+// ════════════════════════════════════════════
+//  KEYBOARD
+// ════════════════════════════════════════════
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
     ['ovPrice','ovName','ovStore','ovAdd','ovRemove','ovSave'].forEach(id=>{
-      if(document.getElementById(id).classList.contains('on'))close(id);
+      if(document.getElementById(id).classList.contains('on'))closeModal(id);
     });
   }
 });
 document.getElementById('priceI').addEventListener('keydown',e=>{if(e.key==='Enter')savePrice();});
 document.getElementById('nameI').addEventListener('keydown',e=>{if(e.key==='Enter')saveName();});
 
-// ── INIT ──
-// Ensure REM values are Sets
-[1,2,3,4].forEach(w=>{if(!(REM[w] instanceof Set))REM[w]=new Set(REM[w]||[]);});
-loadLS();
-// After loadLS, REM entries from JSON are arrays, convert back
-[1,2,3,4].forEach(w=>{if(!(REM[w] instanceof Set))REM[w]=new Set(REM[w]||[]);});
+// ════════════════════════════════════════════
+//  SPLASH SCREEN — 12 second loading experience
+// ════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', function(){
+  const DURATION = 12000;
+  const fill = document.getElementById('splashFill');
+  const pctEl = document.getElementById('splashPct');
+  const tips = document.querySelectorAll('.splash-tip');
+  let currentTip = 0;
+  let startTime = null;
+  let tipTimer = null;
+
+  if(!fill || !pctEl){ return; } // safety — if elements missing skip
+
+  function easeProgress(t){
+    return t < .5 ? 2*t*t : 1 - Math.pow(-2*t+2, 2)/2;
+  }
+
+  function updateBar(ts){
+    if(!startTime) startTime = ts;
+    const elapsed = ts - startTime;
+    const raw = Math.min(elapsed / DURATION, 1);
+    const progress = easeProgress(raw);
+    const val = Math.round(progress * 100);
+    fill.style.width = val + '%';
+    pctEl.textContent = val + '%';
+    if(raw < 1){
+      requestAnimationFrame(updateBar);
+    } else {
+      setTimeout(hideSplash, 500);
+    }
+  }
+
+  function cycleTip(){
+    tips.forEach(t => t.classList.remove('visible'));
+    currentTip = (currentTip + 1) % tips.length;
+    if(tips[currentTip]) tips[currentTip].classList.add('visible');
+  }
+
+  function hideSplash(){
+    const splash = document.getElementById('splash');
+    if(!splash) return;
+    clearInterval(tipTimer);
+    // Fade + scale out
+    splash.style.transition = 'opacity .8s ease, transform .8s ease';
+    splash.style.opacity = '0';
+    splash.style.transform = 'scale(1.05)';
+    setTimeout(() => {
+      if(splash.parentNode) splash.parentNode.removeChild(splash);
+    }, 850);
+  }
+
+  // Start bar after logo animation (1.2s delay)
+  setTimeout(() => requestAnimationFrame(updateBar), 1200);
+
+  // Cycle tips every 1.4s
+  tipTimer = setInterval(cycleTip, 1400);
+});
+
+// ════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════
+[1,2,3,4].forEach(w=>{REM[w]=new Set();});
+loadLS();  // auto-load saved data on startup
+[1,2,3,4].forEach(w=>{if(!(REM[w] instanceof Set))REM[w]=new Set();}); // safety net
+ST=normST(ST);
+applyTheme(localStorage.getItem('_theme')||'dark');
 render();
+goTab('home');
 </script>
 </body>
 </html>
