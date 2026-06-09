@@ -3,145 +3,203 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#09091a">
 <title>Student Budget Tracker</title>
 <style>
-/* ── TOKENS ── */
+/* ── DESIGN SYSTEM ── */
 :root{
-  --bg:#09091a;--surface:#11112a;--card:#1a1a35;--border:#2a2a4a;
-  --green:#10d97a;--gdim:#0a2a1a;--gold:#fbbf24;--odim:#2a1a00;
-  --cream:#f5f0ff;--muted:#7a88b0;--red:#f43f5e;--blue:#38bdf8;
-  --purple:#c084fc;--text:#eae6ff;--nav-bg:rgba(9,9,26,.97);
+  /* Dark mode — deep midnight, electric accents (default) */
+  --bg:#080810;
+  --surface:#0f0f1a;
+  --card:#16162a;
+  --card2:#1c1c32;
+  --border:rgba(255,255,255,.07);
+  --border2:rgba(255,255,255,.12);
+  --green:#00e87a;
+  --green2:#00ff88;
+  --gdim:rgba(0,232,122,.08);
+  --gold:#ffcc00;
+  --odim:rgba(255,204,0,.08);
+  --red:#ff3b5c;
+  --blue:#3d9fff;
+  --purple:#9d6fff;
+  --cyan:#00d4ff;
+  --muted:#545470;
+  --muted2:#7070a0;
+  --text:#e8e6ff;
+  --cream:#f2f0ff;
+  --nav-bg:rgba(8,8,16,.94);
+  --glass:rgba(255,255,255,.035);
+  --glass2:rgba(255,255,255,.065);
+  --glass-b:rgba(255,255,255,.08);
 }
 body.light{
-  --bg:#f0f2f8;--surface:#e2e6f2;--card:#ffffff;--border:#ccd3e8;
-  --green:#0b9e5a;--gdim:#d4f5e5;--gold:#c47d00;--odim:#fef8e0;
-  --cream:#12122a;--muted:#5a6a8a;--red:#dc2626;--blue:#0369a1;
-  --purple:#7c3aed;--text:#1a1f38;--nav-bg:rgba(240,242,248,.97);
+  /* Light mode — warm cream, deep rich tones */
+  --bg:#faf8f4;
+  --surface:#f0ede8;
+  --card:#ffffff;
+  --card2:#f5f2ed;
+  --border:rgba(0,0,0,.08);
+  --border2:rgba(0,0,0,.14);
+  --green:#007a45;
+  --green2:#009955;
+  --gdim:rgba(0,122,69,.07);
+  --gold:#b87800;
+  --odim:rgba(184,120,0,.07);
+  --red:#c8002a;
+  --blue:#0055cc;
+  --purple:#5500cc;
+  --cyan:#0088bb;
+  --muted:#9090a0;
+  --muted2:#606070;
+  --text:#1a1828;
+  --cream:#1a1828;
+  --nav-bg:rgba(250,248,244,.96);
+  --glass:rgba(0,0,0,.025);
+  --glass2:rgba(0,0,0,.05);
+  --glass-b:rgba(0,0,0,.08);
 }
 
-/* ══════════════════════════════════════
-   SPLASH / LOADING SCREEN
-══════════════════════════════════════ */
+/* ── SPLASH ── */
 #splash{
   position:fixed;inset:0;z-index:9999;
+  background:#080810;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   overflow:hidden;
-  background:linear-gradient(160deg,#05051a 0%,#0a0a28 40%,#06101a 100%);
+  transition:opacity .7s ease, transform .7s ease;
+}
+#splash.done{opacity:0;transform:scale(1.04);pointer-events:none;}
+
+/* Animated aurora background */
+.sp-aurora{
+  position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 20%, rgba(0,232,122,.18) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 70% at 80% 80%, rgba(157,111,255,.2) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 50% at 50% 110%, rgba(61,159,255,.15) 0%, transparent 55%);
+  animation:auroraShift 4s ease-in-out infinite alternate;
+}
+@keyframes auroraShift{
+  from{transform:scale(1) rotate(0deg);opacity:.7;}
+  to{transform:scale(1.08) rotate(2deg);opacity:1;}
 }
 
-/* Animated background orbs */
-.splash-orb{
-  position:absolute;border-radius:50%;filter:blur(60px);opacity:.18;
-  animation:orbFloat 6s ease-in-out infinite;
+/* Floating particles */
+.sp-particle{
+  position:absolute;border-radius:50%;
+  background:var(--c);
+  animation:particleFloat var(--d) ease-in-out infinite alternate;
+  opacity:.5;
 }
-.splash-orb.o1{width:260px;height:260px;background:#10d97a;top:-60px;left:-80px;animation-delay:0s;}
-.splash-orb.o2{width:200px;height:200px;background:#c084fc;bottom:-40px;right:-60px;animation-delay:2s;}
-.splash-orb.o3{width:160px;height:160px;background:#38bdf8;bottom:30%;left:-40px;animation-delay:4s;}
-@keyframes orbFloat{
-  0%,100%{transform:translate(0,0) scale(1);}
-  33%{transform:translate(20px,-20px) scale(1.08);}
-  66%{transform:translate(-10px,15px) scale(.95);}
+@keyframes particleFloat{
+  from{transform:translate(0,0) scale(1);}
+  to{transform:translate(var(--tx),var(--ty)) scale(var(--s));}
 }
 
-/* Logo */
-.splash-logo-wrap{position:relative;margin-bottom:1.6rem;}
-.splash-logo{
-  width:96px;height:96px;border-radius:28px;
-  background:linear-gradient(135deg,#10d97a 0%,#38bdf8 50%,#c084fc 100%);
+/* Center content */
+.sp-content{
+  position:relative;z-index:2;
+  display:flex;flex-direction:column;align-items:center;
+}
+
+/* Glowing icon */
+.sp-icon-wrap{
+  position:relative;margin-bottom:1.5rem;
+}
+.sp-icon-glow{
+  position:absolute;inset:-20px;border-radius:50%;
+  background:radial-gradient(circle, rgba(0,232,122,.3) 0%, transparent 70%);
+  animation:iconGlow 2s ease-in-out infinite;
+}
+@keyframes iconGlow{
+  0%,100%{transform:scale(.9);opacity:.6;}
+  50%{transform:scale(1.1);opacity:1;}
+}
+.sp-icon{
+  width:86px;height:86px;border-radius:24px;
+  background:linear-gradient(145deg,#00e87a,#00c4ff 50%,#9d6fff);
   display:flex;align-items:center;justify-content:center;
-  font-size:2.8rem;position:relative;z-index:2;
-  animation:logoPop .7s cubic-bezier(.34,1.56,.64,1) .2s both;
-  box-shadow:0 8px 40px rgba(16,217,122,.25),0 2px 12px rgba(0,0,0,.4);
+  font-size:2.6rem;position:relative;z-index:1;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.12),
+    0 20px 60px rgba(0,0,0,.5),
+    0 0 80px rgba(0,232,122,.2);
+  animation:iconEntry .7s cubic-bezier(.34,1.8,.64,1) .15s both;
 }
-@keyframes logoPop{
-  from{opacity:0;transform:scale(.2) rotate(-15deg);}
-  to{opacity:1;transform:scale(1) rotate(0deg);}
+@keyframes iconEntry{
+  from{opacity:0;transform:scale(.2) rotate(-20deg) translateY(30px);}
+  to{opacity:1;transform:scale(1) rotate(0deg) translateY(0);}
 }
-/* Ring pulses */
-.splash-ring{
-  position:absolute;inset:-8px;border-radius:36px;
-  border:2px solid rgba(16,217,122,.4);
-  animation:ringPulse 2s ease-out .9s infinite;
+/* Orbit rings */
+.sp-orbit{
+  position:absolute;border-radius:50%;border:1px solid rgba(0,232,122,.2);
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  animation:orbitSpin linear infinite;
 }
-.splash-ring.r2{
-  inset:-16px;border-radius:44px;
-  border-color:rgba(56,189,248,.25);
-  animation-delay:1.3s;
+.sp-orbit-dot{
+  position:absolute;top:-3px;left:50%;
+  width:6px;height:6px;border-radius:50%;
+  transform:translateX(-50%);
 }
-@keyframes ringPulse{
-  0%{opacity:1;transform:scale(1);}
-  100%{opacity:0;transform:scale(1.35);}
-}
+.sp-o1{width:110px;height:110px;animation-duration:4s;border-color:rgba(0,232,122,.25);}
+.sp-o1 .sp-orbit-dot{background:#00e87a;box-shadow:0 0 6px #00e87a;}
+.sp-o2{width:145px;height:145px;animation-duration:7s;animation-direction:reverse;border-color:rgba(157,111,255,.2);}
+.sp-o2 .sp-orbit-dot{background:#9d6fff;box-shadow:0 0 6px #9d6fff;}
+@keyframes orbitSpin{from{transform:translate(-50%,-50%) rotate(0deg);}to{transform:translate(-50%,-50%) rotate(360deg);}}
 
-/* App name */
-.splash-name{
-  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-  font-weight:800;font-size:1.55rem;letter-spacing:-.02em;
-  color:#f5f0ff;text-align:center;
-  opacity:0;animation:fadeUp .6s ease .85s both;
+/* Text */
+.sp-title{
+  font-weight:900;font-size:1.55rem;
+  letter-spacing:-.035em;text-align:center;
+  color:#fff;line-height:1.1;
+  animation:textUp .5s ease .5s both;
 }
-.splash-sub{
-  margin-top:.3rem;
-  font-size:.72rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
-  color:#fbbf24;text-align:center;
-  opacity:0;animation:fadeUp .5s ease 1.1s both;
+.sp-title span{
+  background:linear-gradient(90deg,#00e87a,#00c4ff);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
 }
-@keyframes fadeUp{
+.sp-tagline{
+  font-size:.7rem;color:rgba(255,255,255,.4);font-weight:500;
+  letter-spacing:.1em;text-transform:uppercase;margin-top:.35rem;
+  animation:textUp .5s ease .65s both;
+}
+@keyframes textUp{
   from{opacity:0;transform:translateY(14px);}
   to{opacity:1;transform:translateY(0);}
 }
 
-/* Tips / loading messages */
-.splash-tips{
-  position:absolute;top:62%;left:50%;transform:translateX(-50%);
-  width:82%;text-align:center;
+/* Features strip */
+.sp-features{
+  display:flex;gap:.6rem;margin-top:1.3rem;
+  animation:textUp .5s ease .8s both;
 }
-.splash-tip{
-  font-size:.8rem;color:rgba(255,255,255,.55);line-height:1.5;
-  position:absolute;left:0;right:0;
-  opacity:0;transition:opacity .7s ease;
+.sp-feat{
+  display:flex;align-items:center;gap:.3rem;
+  font-size:.6rem;color:rgba(255,255,255,.35);font-weight:600;
+  letter-spacing:.04em;
 }
-.splash-tip.visible{opacity:1;}
+.sp-feat span{font-size:.75rem;}
 
-/* Progress */
-.splash-progress-wrap{
-  position:absolute;bottom:72px;left:50%;transform:translateX(-50%);
-  width:200px;text-align:center;
+/* Bottom progress — sits below feature pills, centered with content */
+.sp-bottom{
+  width:200px;
+  margin-top:1.8rem;
+  text-align:center;
+  animation:textUp .4s ease .9s both;
 }
-.splash-pct{
-  font-size:.72rem;font-weight:700;color:rgba(255,255,255,.4);
-  margin-bottom:.45rem;letter-spacing:.06em;
-  opacity:0;animation:fadeUp .4s ease 1.4s both;
-}
-.splash-bar{
-  height:3px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;
-}
-.splash-bar-fill{
-  height:100%;width:0%;border-radius:3px;
-  background:linear-gradient(90deg,#10d97a,#38bdf8,#c084fc);
-  transition:width .4s ease;
-}
-.splash-dots{
-  display:flex;justify-content:center;gap:.5rem;margin-top:.85rem;
-  opacity:0;animation:fadeUp .4s ease 1.5s both;
-}
-.splash-dot{
-  width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.2);
-  animation:dotBounce 1.2s ease-in-out infinite;
-}
-.splash-dot:nth-child(2){animation-delay:.15s;}
-.splash-dot:nth-child(3){animation-delay:.3s;}
-@keyframes dotBounce{
-  0%,100%{transform:translateY(0);background:rgba(255,255,255,.2);}
-  50%{transform:translateY(-5px);background:#10d97a;}
-}
-.splash-made{
-  position:absolute;bottom:24px;
-  font-size:.6rem;color:rgba(255,255,255,.2);letter-spacing:.06em;
-  opacity:0;animation:fadeUp .4s ease 1.8s both;
+.sp-bar-track{height:2.5px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;}
+.sp-bar-fill{height:100%;width:0%;background:linear-gradient(90deg,#00e87a,#00c4ff,#9d6fff);border-radius:3px;transition:width .08s linear;}
+.sp-pct{text-align:center;font-size:.58rem;color:rgba(255,255,255,.25);font-weight:600;letter-spacing:.05em;margin-top:.45rem;}
+.sp-foot{
+  font-size:.55rem;color:rgba(255,255,255,.14);letter-spacing:.06em;
+  margin-top:.6rem;text-align:center;
+  animation:textUp .4s ease 1s both;
 }
 
 /* ── RESET ── */
@@ -151,300 +209,500 @@ body{
   background:var(--bg);color:var(--text);
   font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
   font-size:15px;min-height:100%;
-  /* Space for top header + bottom tab bar */
-  padding-top:64px;padding-bottom:68px;
+  padding-top:64px;padding-bottom:72px;
+  -webkit-font-smoothing:antialiased;
 }
 
-/* ── TOP HEADER ── */
+/* Ambient background glow */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 70% 50% at 0% 0%, rgba(0,232,122,.05) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 60% at 100% 100%, rgba(157,111,255,.06) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 50% 50%, rgba(61,159,255,.03) 0%, transparent 60%);
+  transition:all .4s ease;
+}
+body>*:not(#splash){position:relative;z-index:1;}
+
+/* ── TOP BAR ── */
 .top-bar{
   position:fixed;top:0;left:0;right:0;z-index:300;
-  background:var(--nav-bg);backdrop-filter:blur(20px);
+  height:60px;display:flex;align-items:center;
+  padding:0 1.1rem;justify-content:space-between;
+  background:var(--nav-bg);
+  backdrop-filter:blur(28px) saturate(180%);
+  -webkit-backdrop-filter:blur(28px) saturate(180%);
   border-bottom:1px solid var(--border);
-  height:64px;display:flex;align-items:center;
-  padding:0 1rem;justify-content:space-between;
-  max-width:100%;
 }
 .top-bar-left{display:flex;flex-direction:column;justify-content:center;}
-.top-title{font-weight:800;font-size:1.05rem;color:var(--cream);letter-spacing:-.01em;line-height:1.15;}
-.top-sub{font-size:.65rem;color:var(--gold);font-weight:500;margin-top:.05rem;}
-.top-bar-right{display:flex;align-items:center;gap:.5rem;}
+.top-title{
+  font-weight:900;font-size:1.05rem;letter-spacing:-.03em;
+  background:linear-gradient(90deg,var(--green),var(--blue));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;line-height:1.2;
+}
+.top-sub{font-size:.6rem;color:var(--muted);font-weight:500;margin-top:.04rem;letter-spacing:.02em;}
+.top-bar-right{display:flex;align-items:center;gap:.42rem;}
 .icon-btn{
-  width:36px;height:36px;border-radius:10px;
-  border:1.5px solid var(--border);background:none;
-  color:var(--muted);font-size:.95rem;cursor:pointer;
+  width:34px;height:34px;border-radius:10px;
+  border:1px solid var(--border);background:var(--glass);
+  color:var(--muted2);font-size:.9rem;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
   transition:.18s;
 }
-.icon-btn:hover{border-color:var(--gold);color:var(--gold);}
+.icon-btn:hover{border-color:var(--green);color:var(--green);}
 
-/* ── BOTTOM TAB BAR ── */
+/* ── BOTTOM NAV ── */
 .tab-bar{
-  position:fixed;bottom:0;left:0;right:0;z-index:300;
-  background:var(--nav-bg);backdrop-filter:blur(20px);
+  position:fixed;bottom:0;left:0;right:0;z-index:9999;
+  width:100%;height:60px;display:flex;align-items:stretch;
+  background:var(--nav-bg);
+  backdrop-filter:blur(28px) saturate(180%);
+  -webkit-backdrop-filter:blur(28px) saturate(180%);
   border-top:1px solid var(--border);
-  height:68px;display:flex;align-items:stretch;
-  max-width:100%;
+  transform:translateZ(0);-webkit-transform:translateZ(0);
+  will-change:transform;
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  box-sizing:content-box;
 }
 .tab-item{
-  flex:1;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;gap:.18rem;cursor:pointer;
-  border:none;background:none;color:var(--muted);
-  font-size:.58rem;font-weight:700;letter-spacing:.03em;
-  text-transform:uppercase;transition:.18s;padding:.5rem 0;
-  position:relative;
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:.1rem;border:none;background:none;
+  color:var(--muted);font-size:.5rem;font-weight:700;
+  letter-spacing:.04em;text-transform:uppercase;
+  cursor:pointer;padding:.35rem .2rem;position:relative;
+  min-width:0;overflow:hidden;transition:color .18s;
+  touch-action:manipulation;
 }
-.tab-item .t-ico{font-size:1.35rem;line-height:1;transition:.2s;}
-.tab-item .t-lbl{line-height:1;}
-.tab-item.on{color:var(--gold);}
-.tab-item.on .t-ico{transform:translateY(-2px);}
+.tab-item .t-ico{font-size:1.2rem;line-height:1;display:block;transition:transform .2s;}
+.tab-item .t-lbl{line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+.tab-item.on{color:var(--green);}
+.tab-item.on .t-ico{transform:translateY(-2px);filter:drop-shadow(0 0 6px var(--green));}
+/* Pill indicator */
 .tab-item::before{
   content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);
-  width:0;height:2.5px;background:var(--gold);border-radius:0 0 3px 3px;
-  transition:.2s;
+  width:0;height:2px;
+  background:linear-gradient(90deg,var(--green),var(--cyan));
+  border-radius:0 0 3px 3px;transition:width .22s cubic-bezier(.34,1.56,.64,1);
 }
-.tab-item.on::before{width:32px;}
+.tab-item.on::before{width:28px;}
+#tMore.on{color:var(--purple);}
+#tMore.on .t-ico{filter:drop-shadow(0 0 6px var(--purple));}
+#tMore.on::before{background:linear-gradient(90deg,var(--purple),var(--blue));}
 
 /* ── SCREENS ── */
-.screen{display:none;max-width:680px;margin:0 auto;padding:.85rem 1rem;}
+.screen{display:none;max-width:680px;margin:0 auto;padding:.85rem 1rem 1.5rem;}
 .screen.on{display:block;}
 
-/* ── HOME SCREEN ── */
+/* ── TYPOGRAPHY ── */
+.page-title{
+  font-size:1.55rem;font-weight:900;color:var(--cream);
+  letter-spacing:-.035em;line-height:1.12;margin-bottom:.25rem;
+}
+.page-sub{font-size:.78rem;color:var(--muted2);line-height:1.45;margin-bottom:1.1rem;}
+.section-label{
+  font-size:.62rem;font-weight:800;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--muted);
+  margin-bottom:.5rem;display:block;
+}
+
+/* ── CARDS ── */
+.card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:18px;padding:1rem 1.05rem;
+  position:relative;overflow:hidden;
+  backdrop-filter:blur(12px);
+}
+.card-glow{
+  background:var(--glass);border:1px solid var(--glass-b);
+  border-radius:18px;padding:1rem 1.05rem;
+  position:relative;overflow:hidden;
+  backdrop-filter:blur(16px);
+}
+
+/* ── HOME ── */
 .home-greeting{margin-bottom:1.1rem;}
-.home-greeting h2{font-size:1.25rem;font-weight:800;color:var(--cream);line-height:1.2;}
-.home-greeting p{font-size:.78rem;color:var(--muted);margin-top:.3rem;line-height:1.4;}
+.home-greeting h2{
+  font-size:1.6rem;font-weight:900;color:var(--cream);
+  letter-spacing:-.04em;line-height:1.1;
+}
+.home-greeting p{
+  font-size:.77rem;color:var(--muted2);margin-top:.28rem;line-height:1.45;
+}
+.sum-row{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-bottom:.8rem;}
+.sum-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:18px;padding:.95rem 1rem;position:relative;overflow:hidden;
+  transition:.2s;
+}
+.sum-card::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,var(--gdim),transparent 55%);
+  pointer-events:none;
+}
+.sum-card:nth-child(2)::after{
+  background:linear-gradient(135deg,rgba(157,111,255,.07),transparent 55%);
+}
+.sum-card .sc-lbl{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);}
+.sum-card .sc-val{font-size:1.6rem;font-weight:900;margin:.18rem 0 .08rem;line-height:1;letter-spacing:-.04em;}
+.sum-card .sc-sub{font-size:.62rem;color:var(--muted);}
 
-/* Summary cards row */
-.sum-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.85rem;}
-.sum-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:.9rem 1rem;}
-.sum-card .sc-lbl{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);}
-.sum-card .sc-val{font-size:1.45rem;font-weight:800;margin:.18rem 0 .1rem;line-height:1;}
-.sum-card .sc-sub{font-size:.65rem;color:var(--muted);}
-
-/* Monthly overview card */
-.m-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1rem;margin-bottom:.85rem;}
-.m-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.65rem;}
-.m-label{font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);}
-.m-nums{display:flex;gap:.9rem;}
-.m-num .v{font-weight:800;font-size:.95rem;}
-.m-num .l{font-size:.6rem;color:var(--muted);}
-.seg-bar{display:flex;gap:2px;height:11px;background:var(--border);border-radius:9px;overflow:hidden;}
-.seg{flex:1;height:100%;background:var(--border);position:relative;overflow:hidden;}
-.seg:first-child{border-radius:9px 0 0 9px;}.seg:last-child{border-radius:0 9px 9px 0;}
-.seg-fill{position:absolute;inset:0 auto 0 0;transition:width .45s cubic-bezier(.34,1.56,.64,1);}
-.s1 .seg-fill{background:#10d97a;}.s2 .seg-fill{background:#2dd4bf;}
-.s3 .seg-fill{background:#fbbf24;}.s4 .seg-fill{background:#fb923c;}
-.seg-fill.over{background:var(--red)!important;}
+/* Monthly card */
+.m-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:18px;padding:.95rem 1rem;margin-bottom:.8rem;
+}
+.m-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.6rem;}
+.m-label{font-size:.62rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+.m-nums{display:flex;gap:.85rem;}
+.m-num .v{font-weight:900;font-size:.9rem;}
+.m-num .l{font-size:.58rem;color:var(--muted);}
+.seg-bar{display:flex;gap:2px;height:6px;background:rgba(255,255,255,.04);border-radius:8px;overflow:hidden;}
+.seg{flex:1;height:100%;position:relative;overflow:hidden;}
+.seg:first-child{border-radius:8px 0 0 8px;}.seg:last-child{border-radius:0 8px 8px 0;}
+.seg-fill{position:absolute;inset:0 auto 0 0;transition:width .5s cubic-bezier(.34,1.56,.64,1);}
+.s1 .seg-fill{background:linear-gradient(90deg,#00e87a,#00c4ff);}
+.s2 .seg-fill{background:linear-gradient(90deg,#3d9fff,#00d4ff);}
+.s3 .seg-fill{background:linear-gradient(90deg,#ffcc00,#ff9500);}
+.s4 .seg-fill{background:linear-gradient(90deg,#ff7040,#ff3b5c);}
+.seg-fill.over{background:linear-gradient(90deg,#ff3b5c,#ff006e)!important;}
 .seg-labels{display:flex;gap:2px;margin-top:.22rem;}
-.seg-lbl{flex:1;text-align:center;font-size:.56rem;color:var(--muted);}
-.wk-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.38rem;margin-top:.7rem;}
-.wk-mini{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:.42rem .3rem;text-align:center;cursor:pointer;transition:.18s;}
-.wk-mini:hover,.wk-mini.act{border-color:var(--gold);background:rgba(251,191,36,.07);}
-.wk-mini .wml{font-size:.58rem;font-weight:700;color:var(--muted);text-transform:uppercase;}
-.wk-mini .wms{font-weight:800;font-size:.82rem;margin-top:.08rem;}
-.wk-mini .wmr{font-size:.56rem;color:var(--muted);}
-.m-chip{margin-top:.6rem;display:flex;align-items:center;gap:.38rem;border-radius:9px;padding:.42rem .8rem;font-size:.75rem;border:1px solid rgba(56,189,248,.3);background:rgba(56,189,248,.07);color:var(--blue);line-height:1.35;}
-.m-chip.good{background:rgba(16,217,122,.08);border-color:rgba(16,217,122,.35);color:var(--green);}
-.m-chip.warn{background:rgba(251,191,36,.08);border-color:rgba(251,191,36,.35);color:var(--gold);}
-.m-chip.bad{background:rgba(244,63,94,.08);border-color:rgba(244,63,94,.35);color:var(--red);}
-
-/* Quick-access week buttons on home */
-.wk-btns{display:grid;grid-template-columns:repeat(2,1fr);gap:.6rem;margin-bottom:.85rem;}
-.wk-btn{background:var(--card);border:1.5px solid var(--border);border-radius:13px;padding:.85rem 1rem;cursor:pointer;text-align:left;transition:.18s;display:flex;flex-direction:column;gap:.22rem;}
-.wk-btn:hover{border-color:var(--gold);}
-.wk-btn .wb-week{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);}
-.wk-btn .wb-name{font-size:.78rem;font-weight:600;color:var(--text);}
-.wk-btn .wb-amt{font-size:.72rem;color:var(--green);font-weight:700;}
-.wk-btn .wb-bar{height:4px;background:var(--border);border-radius:4px;margin-top:.3rem;overflow:hidden;}
-.wk-btn .wb-bar-fill{height:100%;background:linear-gradient(90deg,var(--green),#2dd4bf);border-radius:4px;transition:.4s;}
+.seg-lbl{flex:1;text-align:center;font-size:.52rem;color:var(--muted);}
+.wk-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.38rem;margin-top:.65rem;}
+.wk-mini{
+  background:var(--glass);border:1px solid var(--border);
+  border-radius:12px;padding:.42rem .28rem;text-align:center;cursor:pointer;transition:.18s;
+}
+.wk-mini:hover,.wk-mini.act{
+  border-color:var(--green);background:var(--gdim);
+  box-shadow:0 0 14px rgba(0,232,122,.1);
+}
+.wk-mini .wml{font-size:.55rem;font-weight:700;color:var(--muted);text-transform:uppercase;}
+.wk-mini .wms{font-weight:900;font-size:.82rem;margin-top:.08rem;}
+.wk-mini .wmr{font-size:.53rem;color:var(--muted);margin-top:.04rem;}
+.m-chip{
+  margin-top:.6rem;display:flex;align-items:center;gap:.35rem;
+  border-radius:10px;padding:.4rem .78rem;font-size:.73rem;
+  border:1px solid rgba(61,159,255,.2);background:rgba(61,159,255,.06);
+  color:var(--blue);line-height:1.35;
+}
+.m-chip.good{background:var(--gdim);border-color:rgba(0,232,122,.22);color:var(--green);}
+.m-chip.warn{background:var(--odim);border-color:rgba(255,204,0,.22);color:var(--gold);}
+.m-chip.bad{background:rgba(255,59,92,.07);border-color:rgba(255,59,92,.22);color:var(--red);}
+.wk-btns{display:grid;grid-template-columns:repeat(2,1fr);gap:.62rem;margin-bottom:.8rem;}
+.wk-btn{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:16px;padding:.85rem .95rem;
+  cursor:pointer;text-align:left;transition:.2s;
+  display:flex;flex-direction:column;gap:.2rem;
+}
+.wk-btn:hover{border-color:var(--green);box-shadow:0 6px 24px rgba(0,232,122,.1);}
+.wk-btn:active{transform:scale(.97);}
+.wk-btn .wb-week{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);}
+.wk-btn .wb-name{font-size:.78rem;font-weight:700;color:var(--text);}
+.wk-btn .wb-amt{font-size:.7rem;color:var(--green);font-weight:700;}
+.wk-btn .wb-bar{height:2.5px;background:rgba(255,255,255,.05);border-radius:3px;margin-top:.32rem;overflow:hidden;}
+.wk-btn .wb-bar-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--cyan));border-radius:3px;transition:.4s;}
 .wk-btn .wb-bar-fill.over{background:linear-gradient(90deg,var(--gold),var(--red));}
 
-/* ── SHOPPING SCREEN ── */
-.sh-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;}
-.sh-title-row{display:flex;flex-direction:column;}
-.sh-title{font-size:1.05rem;font-weight:800;color:var(--cream);}
-.sh-sub{font-size:.7rem;color:var(--muted);margin-top:.1rem;}
-.sh-week-pills{display:flex;gap:.38rem;margin-bottom:.75rem;overflow-x:auto;scrollbar-width:none;}
+/* ── SHOPPING ── */
+.sh-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.72rem;}
+.sh-title{font-size:1.1rem;font-weight:900;color:var(--cream);letter-spacing:-.025em;}
+.sh-sub{font-size:.68rem;color:var(--muted2);margin-top:.08rem;}
+.sh-week-pills{display:flex;gap:.35rem;margin-bottom:.72rem;overflow-x:auto;scrollbar-width:none;}
 .sh-week-pills::-webkit-scrollbar{display:none;}
-.sh-pill{flex-shrink:0;padding:.32rem .85rem;border-radius:18px;border:1.5px solid var(--border);background:none;color:var(--muted);font-size:.74rem;font-weight:700;cursor:pointer;transition:.18s;}
-.sh-pill.on{background:var(--gold);border-color:var(--gold);color:#09091a;}
-
-/* Weekly budget bar */
-.w-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:.9rem 1rem;margin-bottom:.75rem;}
-.w-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.45rem;}
-.w-label{font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);}
-.w-nums{display:flex;gap:.9rem;}
-.w-num .v{font-weight:800;font-size:.95rem;}
-.w-num .l{font-size:.6rem;color:var(--muted);}
-.prog{height:9px;background:var(--border);border-radius:9px;overflow:hidden;}
-.prog-fill{height:100%;border-radius:9px;transition:width .45s cubic-bezier(.34,1.56,.64,1);background:linear-gradient(90deg,var(--green),#2dd4bf);}
+.sh-pill{
+  flex-shrink:0;padding:.3rem .85rem;border-radius:20px;
+  border:1.5px solid var(--border);background:none;
+  color:var(--muted);font-size:.7rem;font-weight:700;cursor:pointer;transition:.18s;
+}
+.sh-pill.on{
+  background:var(--gdim);border-color:var(--green);color:var(--green);
+  box-shadow:0 0 16px rgba(0,232,122,.15);
+}
+.w-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:18px;padding:.88rem 1rem;margin-bottom:.72rem;
+}
+.w-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.42rem;}
+.w-label{font-size:.62rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+.w-nums{display:flex;gap:.85rem;}
+.w-num .v{font-weight:900;font-size:.9rem;}
+.w-num .l{font-size:.58rem;color:var(--muted);}
+.prog{height:5px;background:rgba(255,255,255,.05);border-radius:8px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:8px;transition:width .45s cubic-bezier(.34,1.56,.64,1);background:linear-gradient(90deg,var(--green),var(--cyan));}
 .prog-fill.over{background:linear-gradient(90deg,var(--gold),var(--red));}
 .prog-marks{display:flex;justify-content:space-between;margin-top:.2rem;}
-.prog-mark{font-size:.56rem;color:var(--muted);}
-.w-chip{margin-top:.55rem;display:flex;align-items:center;gap:.38rem;background:var(--gdim);border:1px solid var(--green);border-radius:9px;padding:.38rem .8rem;font-size:.75rem;color:var(--green);width:100%;line-height:1.3;}
-.w-chip.warn{background:var(--odim);border-color:var(--gold);color:var(--gold);}
-.w-chip.bad{background:rgba(244,63,94,.08);border-color:var(--red);color:var(--red);}
-
-/* Actions */
-.acts{display:flex;gap:.42rem;margin-bottom:.75rem;flex-wrap:wrap;}
-.act{flex:1;min-width:64px;padding:.48rem .3rem;border-radius:9px;border:1.5px solid var(--border);background:none;color:var(--muted);font-size:.72rem;font-weight:700;cursor:pointer;text-align:center;transition:.18s;}
+.prog-mark{font-size:.52rem;color:var(--muted);}
+.w-chip{
+  margin-top:.5rem;display:flex;align-items:center;gap:.35rem;
+  background:var(--gdim);border:1px solid rgba(0,232,122,.2);
+  border-radius:9px;padding:.35rem .78rem;font-size:.72rem;color:var(--green);
+  width:100%;line-height:1.3;
+}
+.w-chip.warn{background:var(--odim);border-color:rgba(255,204,0,.2);color:var(--gold);}
+.w-chip.bad{background:rgba(255,59,92,.07);border-color:rgba(255,59,92,.2);color:var(--red);}
+.acts{display:flex;gap:.38rem;margin-bottom:.72rem;flex-wrap:wrap;}
+.act{
+  flex:1;min-width:60px;padding:.44rem .3rem;
+  border-radius:10px;border:1.5px solid var(--border);
+  background:var(--glass);color:var(--muted);
+  font-size:.68rem;font-weight:700;cursor:pointer;text-align:center;transition:.18s;
+}
 .act:hover{border-color:var(--gold);color:var(--gold);}
-.act.add{border-color:rgba(16,217,122,.5);color:var(--green);}
+.act.add{border-color:rgba(0,232,122,.28);color:var(--green);}
 .act.add:hover{background:var(--gdim);}
 .act.del:hover{border-color:var(--red);color:var(--red);}
-
-/* Category header */
-.cat-hd{font-size:.66rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);padding:.4rem 0;margin:.68rem 0 .35rem;}
-
-/* Item card */
-.item{display:grid;grid-template-columns:2rem 1fr auto;align-items:center;gap:.52rem;padding:.6rem .75rem;border-radius:12px;background:var(--card);border:1px solid var(--border);margin-bottom:.32rem;transition:.2s;}
-.item.done{opacity:.35;background:var(--surface);}
+.act:active{transform:scale(.95);}
+.cat-hd{
+  font-size:.6rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);border-bottom:1px solid var(--border);
+  padding:.38rem 0;margin:.68rem 0 .32rem;
+}
+.item{
+  display:grid;grid-template-columns:1.9rem 1fr auto;align-items:center;
+  gap:.48rem;padding:.58rem .75rem;border-radius:14px;
+  background:var(--card);border:1px solid var(--border);
+  margin-bottom:.28rem;transition:.18s;
+}
+.item:active{transform:scale(.98);}
+.item.done{opacity:.32;}
 .item.done .iname{text-decoration:line-through;}
-.chk{width:1.6rem;height:1.6rem;border-radius:6px;border:2px solid var(--border);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0;transition:.18s;color:transparent;}
-.chk.on{background:var(--green);border-color:var(--green);color:#09091a;}
-.iname{font-size:.85rem;line-height:1.25;font-weight:500;}
-.imeta{display:flex;align-items:center;gap:.28rem;margin-top:.14rem;flex-wrap:wrap;}
-.stag{font-size:.6rem;padding:.07rem .38rem;border-radius:5px;font-weight:700;cursor:pointer;}
-.sa{background:#1a2a55;color:#82b4ff;}.sl{background:#3a1e00;color:#ffb04a;}
-.sk{background:#3a0e0e;color:#ff8080;}.se{background:#0a2a15;color:#4ae87a;}
-.sn{background:#28103d;color:#c585ff;}.sf{background:#0d2535;color:#5dd0f0;}
-.sany{background:#282840;color:#b0b0d0;}.sc{background:#1e1e38;color:#a8a8f0;}
-.iright{display:flex;flex-direction:column;align-items:flex-end;gap:.2rem;flex-shrink:0;}
-.iprice{font-weight:800;font-size:.9rem;color:var(--green);cursor:pointer;padding:.07rem .25rem;border-radius:5px;}
+.chk{
+  width:1.55rem;height:1.55rem;border-radius:7px;
+  border:2px solid var(--border);background:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.76rem;flex-shrink:0;transition:.18s;color:transparent;
+}
+.chk.on{background:var(--green);border-color:var(--green);color:#080810;box-shadow:0 0 12px rgba(0,232,122,.35);}
+.iname{font-size:.82rem;line-height:1.22;font-weight:500;}
+.imeta{display:flex;align-items:center;gap:.26rem;margin-top:.12rem;flex-wrap:wrap;}
+.stag{font-size:.57rem;padding:.06rem .34rem;border-radius:5px;font-weight:700;cursor:pointer;}
+.sa{background:#0d1f45;color:#6aaaf5;}.sl{background:#2a1400;color:#ffaa40;}
+.sk{background:#2a0c0c;color:#ff7070;}.se{background:#081e10;color:#3ad870;}
+.sn{background:#1e0a2d;color:#b570f5;}.sf{background:#091e2a;color:#50c8e8;}
+.sany{background:#1e1e2e;color:#9090b8;}.sc{background:#161628;color:#9090d8;}
+.iright{display:flex;flex-direction:column;align-items:flex-end;gap:.18rem;flex-shrink:0;}
+.iprice{font-weight:900;font-size:.88rem;color:var(--green);cursor:pointer;padding:.07rem .22rem;border-radius:5px;transition:.15s;}
 .iprice:hover{background:var(--gdim);}
-.ibtns{display:flex;gap:.15rem;}
-.ibtn{font-size:.58rem;padding:.09rem .25rem;border-radius:5px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;font-weight:700;transition:.13s;}
+.ibtns{display:flex;gap:.13rem;}
+.ibtn{font-size:.55rem;padding:.08rem .22rem;border-radius:5px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;font-weight:700;transition:.13s;}
 .ibtn.ip:hover{border-color:var(--green);color:var(--green);}
 .ibtn.in:hover{border-color:var(--blue);color:var(--blue);}
 .ibtn.is:hover{border-color:var(--purple);color:var(--purple);}
 .ibtn.ir:hover{border-color:var(--red);color:var(--red);}
 
-/* ── MEAL PLAN SCREEN ── */
-.mp-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.85rem;}
-.mp-header h2{font-weight:800;font-size:1.05rem;color:var(--cream);}
-.mp-gen{padding:.48rem .95rem;border-radius:9px;background:var(--purple);border:none;color:#fff;font-size:.76rem;font-weight:700;cursor:pointer;}
-.mp-gen:hover{opacity:.85;}
-.mp-wk-sel{display:flex;gap:.38rem;margin-bottom:.75rem;overflow-x:auto;scrollbar-width:none;}
+/* ── MEAL PLAN ── */
+.mp-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.82rem;}
+.mp-header h2{font-weight:900;font-size:1.05rem;color:var(--cream);letter-spacing:-.02em;}
+.mp-gen{
+  padding:.46rem .92rem;border-radius:10px;
+  background:linear-gradient(90deg,var(--purple),var(--blue));
+  border:none;color:#fff;font-size:.74rem;font-weight:700;cursor:pointer;
+  box-shadow:0 4px 16px rgba(157,111,255,.3);transition:.18s;
+}
+.mp-gen:hover{opacity:.88;transform:translateY(-1px);}
+.mp-gen:active{transform:scale(.96);}
+.mp-wk-sel{display:flex;gap:.35rem;margin-bottom:.72rem;overflow-x:auto;scrollbar-width:none;}
 .mp-wk-sel::-webkit-scrollbar{display:none;}
-.mp-pill{flex-shrink:0;padding:.3rem .78rem;border-radius:18px;border:1.5px solid var(--border);background:none;color:var(--muted);font-size:.72rem;font-weight:700;cursor:pointer;transition:.18s;}
-.mp-pill.on{background:var(--purple);border-color:var(--purple);color:#fff;}
+.mp-pill{flex-shrink:0;padding:.28rem .76rem;border-radius:18px;border:1.5px solid var(--border);background:none;color:var(--muted);font-size:.7rem;font-weight:700;cursor:pointer;transition:.18s;}
+.mp-pill.on{background:var(--purple);border-color:var(--purple);color:#fff;box-shadow:0 0 16px rgba(157,111,255,.3);}
 .mp-empty{text-align:center;padding:2.5rem 1rem;color:var(--muted);line-height:1.8;}
 .mp-empty strong{display:block;font-size:1rem;color:var(--text);margin-bottom:.4rem;}
-.ing-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:.8rem;margin-bottom:.85rem;}
-.ing-title{font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.45rem;}
-.ing-tags{display:flex;flex-wrap:wrap;gap:.28rem;}
-.ing-tag{font-size:.7rem;padding:.14rem .48rem;border-radius:11px;background:var(--gdim);color:var(--green);border:1px solid rgba(16,217,122,.3);}
-.mp-note{background:var(--odim);border:1px solid rgba(251,191,36,.3);border-radius:11px;padding:.55rem .85rem;font-size:.75rem;color:var(--gold);margin-bottom:.85rem;line-height:1.45;}
-.day-card{background:var(--card);border:1px solid var(--border);border-radius:13px;margin-bottom:.72rem;overflow:hidden;}
-.day-hd{padding:.65rem .9rem;}
-.day-hd.c0{background:linear-gradient(135deg,#0a2a1e,#1a1a35);}
-.day-hd.c1{background:linear-gradient(135deg,#2a1a00,#1a1a35);}
-.day-hd.c2{background:linear-gradient(135deg,#0a2535,#1a1a35);}
-.day-hd.c3{background:linear-gradient(135deg,#2a0e0e,#1a1a35);}
-.day-hd.c4{background:linear-gradient(135deg,#280e38,#1a1a35);}
-.day-hd.c5{background:linear-gradient(135deg,#1a2a55,#1a1a35);}
-.day-hd.c6{background:linear-gradient(135deg,#2a1a0a,#1a1a35);}
+.ing-box{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:.78rem;margin-bottom:.82rem;}
+.ing-title{font-size:.6rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:.42rem;}
+.ing-tags{display:flex;flex-wrap:wrap;gap:.26rem;}
+.ing-tag{font-size:.68rem;padding:.12rem .44rem;border-radius:10px;background:var(--gdim);color:var(--green);border:1px solid rgba(0,232,122,.18);}
+.mp-note{background:var(--odim);border:1px solid rgba(255,204,0,.18);border-radius:12px;padding:.52rem .82rem;font-size:.73rem;color:var(--gold);margin-bottom:.82rem;line-height:1.45;}
+.day-card{background:var(--card);border:1px solid var(--border);border-radius:16px;margin-bottom:.68rem;overflow:hidden;}
+.day-hd{padding:.62rem .88rem;}
+.day-hd.c0{background:linear-gradient(135deg,rgba(0,232,122,.1),transparent);}
+.day-hd.c1{background:linear-gradient(135deg,rgba(255,204,0,.09),transparent);}
+.day-hd.c2{background:linear-gradient(135deg,rgba(61,159,255,.09),transparent);}
+.day-hd.c3{background:linear-gradient(135deg,rgba(255,59,92,.09),transparent);}
+.day-hd.c4{background:linear-gradient(135deg,rgba(157,111,255,.1),transparent);}
+.day-hd.c5{background:linear-gradient(135deg,rgba(0,212,255,.08),transparent);}
+.day-hd.c6{background:linear-gradient(135deg,rgba(255,140,0,.09),transparent);}
 .day-name{font-weight:800;font-size:.88rem;color:var(--cream);}
-.day-meals{padding:0 .9rem .75rem;}
-.meal{padding:.48rem 0;border-bottom:1px solid var(--border);}
+.day-meals{padding:0 .88rem .72rem;}
+.meal{padding:.45rem 0;border-bottom:1px solid var(--border);}
 .meal:last-child{border-bottom:none;}
-.meal-row{display:grid;grid-template-columns:68px 1fr;gap:.4rem;}
-.meal-lbl{font-size:.62rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);padding-top:.1rem;line-height:1.2;}
-.meal-name{font-size:.85rem;font-weight:600;color:var(--cream);line-height:1.2;}
-.meal-desc{font-size:.72rem;color:var(--muted);margin-top:.15rem;line-height:1.3;}
-.meal-tags{display:flex;flex-wrap:wrap;gap:.22rem;margin-top:.22rem;}
-.mt{font-size:.6rem;padding:.07rem .35rem;border-radius:7px;font-weight:600;}
-.mtp{background:#2a0e0e;color:#ff8080;}.mtb{background:#1a2a55;color:#82b4ff;}
-.mte{background:#0a2a1e;color:#10d97a;}.mth{background:#2a1a00;color:#fbbf24;}
+.meal-row{display:grid;grid-template-columns:65px 1fr;gap:.38rem;}
+.meal-lbl{font-size:.58rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);padding-top:.1rem;line-height:1.2;}
+.meal-name{font-size:.84rem;font-weight:700;color:var(--cream);line-height:1.2;}
+.meal-desc{font-size:.7rem;color:var(--muted2);margin-top:.14rem;line-height:1.3;}
+.meal-tags{display:flex;flex-wrap:wrap;gap:.2rem;margin-top:.2rem;}
+.mt{font-size:.58rem;padding:.06rem .32rem;border-radius:6px;font-weight:600;}
+.mtp{background:rgba(255,59,92,.12);color:#ff8095;}.mtb{background:rgba(61,159,255,.12);color:#80c0ff;}
+.mte{background:rgba(0,232,122,.1);color:var(--green);}.mth{background:rgba(255,204,0,.1);color:var(--gold);}
 
-/* ── SETTINGS SCREEN ── */
-.settings-section{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:.85rem;}
-.settings-hd{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:.6rem 1rem .3rem;}
+/* ── MORE SCREEN ── */
+.more-title{font-size:1.1rem;font-weight:900;color:var(--cream);letter-spacing:-.025em;margin-bottom:.22rem;}
+.more-sub{font-size:.72rem;color:var(--muted2);margin-bottom:.95rem;}
+.more-grid{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;}
+.more-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:18px;padding:1.05rem .92rem;cursor:pointer;
+  transition:.22s;display:flex;flex-direction:column;gap:.42rem;
+  position:relative;overflow:hidden;
+}
+.more-card:active{transform:scale(.96);}
+.more-card:hover{border-color:var(--border2);box-shadow:0 8px 28px rgba(0,0,0,.2);}
+.more-card::before{content:'';position:absolute;inset:0;opacity:0;transition:.22s;pointer-events:none;}
+.more-card:hover::before{opacity:1;}
+.mc-ico{font-size:1.85rem;line-height:1;}
+.mc-name{font-size:.88rem;font-weight:800;color:var(--cream);letter-spacing:-.015em;line-height:1.2;}
+.mc-sub{font-size:.66rem;color:var(--muted2);line-height:1.38;}
+.mc-badge{display:inline-block;font-size:.57rem;font-weight:700;padding:.09rem .4rem;border-radius:6px;margin-top:.1rem;}
+
+/* ── SUPPLEMENTS (sub-screen) ── */
+.supp-back{display:flex;align-items:center;gap:.42rem;color:var(--muted2);font-size:.78rem;font-weight:600;cursor:pointer;margin-bottom:.82rem;transition:.15s;}
+.supp-back:hover{color:var(--green);}
+.supp-hd{margin-bottom:.82rem;}
+.supp-hd h2{font-size:1.05rem;font-weight:900;color:var(--cream);letter-spacing:-.025em;}
+.supp-hd p{font-size:.7rem;color:var(--muted2);margin-top:.2rem;}
+.supp-tabs{display:flex;gap:.32rem;margin-bottom:.82rem;background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:.26rem;}
+.supp-tab{flex:1;padding:.34rem .5rem;border-radius:9px;border:none;background:none;color:var(--muted);font-size:.68rem;font-weight:700;cursor:pointer;transition:.18s;}
+.supp-tab.on{background:var(--green);color:#080810;box-shadow:0 2px 12px rgba(0,232,122,.3);}
+.supp-card{background:var(--card);border:1px solid var(--border);border-radius:15px;margin-bottom:.48rem;overflow:hidden;transition:.18s;cursor:pointer;}
+.supp-card:hover{border-color:var(--border2);}
+.supp-card-head{display:flex;align-items:center;gap:.7rem;padding:.7rem .85rem;}
+.supp-icon{font-size:1.3rem;width:1.9rem;text-align:center;flex-shrink:0;}
+.supp-name-wrap{flex:1;min-width:0;}
+.supp-name{font-weight:700;font-size:.84rem;color:var(--cream);}
+.supp-dose{font-size:.63rem;color:var(--muted);margin-top:.06rem;}
+.supp-badge{font-size:.56rem;font-weight:700;padding:.09rem .38rem;border-radius:6px;flex-shrink:0;}
+.badge-high{background:rgba(255,59,92,.13);color:#ff8095;border:1px solid rgba(255,59,92,.2);}
+.badge-med{background:rgba(255,204,0,.1);color:var(--gold);border:1px solid rgba(255,204,0,.18);}
+.badge-low{background:var(--glass);color:var(--muted);border:1px solid var(--border);}
+.supp-detail{display:none;padding:.52rem .85rem .78rem;border-top:1px solid var(--border);}
+.supp-detail.open{display:block;}
+.supp-row{display:flex;gap:.48rem;margin-bottom:.4rem;font-size:.72rem;align-items:flex-start;}
+.supp-row-lbl{color:var(--muted);font-weight:600;min-width:65px;flex-shrink:0;}
+.supp-row-val{color:var(--text);line-height:1.4;}
+.supp-tip{margin-top:.55rem;background:var(--gdim);border:1px solid rgba(0,232,122,.16);border-radius:9px;padding:.46rem .7rem;font-size:.7rem;color:var(--green);line-height:1.45;}
+.supp-chk-item{display:flex;align-items:center;gap:.7rem;padding:.58rem .85rem;background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:.34rem;cursor:pointer;transition:.18s;}
+.supp-chk-item.done{opacity:.35;}
+.supp-chk-item .sc-ico{font-size:1.15rem;flex-shrink:0;}
+.supp-chk-item .sc-info{flex:1;}
+.supp-chk-item .sc-name{font-size:.82rem;font-weight:600;color:var(--cream);}
+.supp-chk-item .sc-when{font-size:.63rem;color:var(--muted);margin-top:.05rem;}
+.supp-chk-btn{width:1.5rem;height:1.5rem;border-radius:7px;border:2px solid var(--border);background:none;display:flex;align-items:center;justify-content:center;font-size:.74rem;color:transparent;transition:.18s;flex-shrink:0;cursor:pointer;}
+.supp-chk-btn.on{background:var(--green);border-color:var(--green);color:#080810;box-shadow:0 0 10px rgba(0,232,122,.3);}
+.sched-group{margin-bottom:.78rem;}
+.sched-time{font-size:.62rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);padding:.36rem 0;margin-bottom:.4rem;}
+.sched-item{display:flex;align-items:center;gap:.6rem;padding:.5rem .75rem;background:var(--card);border:1px solid var(--border);border-radius:11px;margin-bottom:.28rem;}
+.sched-ico{font-size:1.05rem;width:1.45rem;text-align:center;flex-shrink:0;}
+.sched-name{font-size:.8rem;font-weight:600;color:var(--cream);}
+.sched-note{font-size:.63rem;color:var(--muted);margin-top:.04rem;}
+
+/* ── SETTINGS ── */
+.settings-section{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:18px;overflow:hidden;margin-bottom:.8rem;
+}
+.settings-hd{font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:.56rem 1rem .26rem;}
 .settings-row{display:flex;align-items:center;justify-content:space-between;padding:.72rem 1rem;border-bottom:1px solid var(--border);cursor:pointer;transition:.15s;}
 .settings-row:last-child{border-bottom:none;}
-.settings-row:hover{background:var(--surface);}
+.settings-row:hover{background:var(--glass);}
+.settings-row:active{background:var(--glass2);}
 .sr-left{display:flex;align-items:center;gap:.7rem;}
-.sr-icon{font-size:1.1rem;width:1.5rem;text-align:center;}
-.sr-text{font-size:.85rem;font-weight:500;}
-.sr-sub{font-size:.68rem;color:var(--muted);margin-top:.08rem;}
-.sr-right{color:var(--muted);font-size:.85rem;}
-.toggle{width:42px;height:24px;border-radius:12px;background:var(--border);border:none;cursor:pointer;position:relative;transition:.25s;flex-shrink:0;}
-.toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.25s;}
-.toggle.on{background:var(--green);}
-.toggle.on::after{left:21px;}
-.save-code-area{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:.65rem .9rem;font-family:monospace;font-size:.65rem;color:var(--muted);height:64px;resize:none;margin:.5rem 0;}
-.save-code-area:focus{outline:none;border-color:var(--gold);}
+.sr-icon{font-size:1.08rem;width:1.45rem;text-align:center;}
+.sr-text{font-size:.83rem;font-weight:600;color:var(--text);}
+.sr-sub{font-size:.65rem;color:var(--muted);margin-top:.05rem;}
+.sr-right{color:var(--muted);font-size:.82rem;}
+.toggle{width:40px;height:22px;border-radius:11px;background:var(--border);border:none;cursor:pointer;position:relative;transition:.25s;flex-shrink:0;}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.25s;box-shadow:0 1px 4px rgba(0,0,0,.3);}
+.toggle.on{background:var(--green);box-shadow:0 0 10px rgba(0,232,122,.3);}
+.toggle.on::after{left:20px;}
 
 /* ── MODALS ── */
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:500;align-items:flex-end;justify-content:center;}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:500;align-items:flex-end;justify-content:center;backdrop-filter:blur(8px);}
 .overlay.on{display:flex;}
-.modal{background:var(--card);border:1px solid var(--border);border-radius:20px 20px 0 0;padding:1.35rem 1.2rem 1.85rem;width:100%;max-width:520px;animation:up .2s ease;max-height:90vh;overflow-y:auto;}
+.modal{
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:22px 22px 0 0;padding:1.25rem 1.15rem 1.8rem;
+  width:100%;max-width:520px;animation:up .2s cubic-bezier(.34,1.2,.64,1);
+  max-height:92vh;overflow-y:auto;
+}
 @keyframes up{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
-.modal h3{font-weight:800;font-size:.98rem;margin-bottom:.2rem;color:var(--cream);}
-.modal p{font-size:.76rem;color:var(--muted);margin-bottom:.85rem;line-height:1.45;}
-.field{margin-bottom:.6rem;}
-.flbl{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:.22rem;}
-.finput{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:11px;padding:.68rem .9rem;font-size:.95rem;color:var(--text);transition:.18s;}
-.finput:focus{outline:none;border-color:var(--gold);}
-.finput.green{border-color:var(--green);color:var(--green);}
-.finput.blue{border-color:var(--blue);color:var(--blue);}
-.finput.purple{border-color:var(--purple);color:var(--purple);}
-.finput.num{text-align:center;font-weight:800;font-size:1.15rem;}
+.modal h3{font-weight:900;font-size:.98rem;margin-bottom:.2rem;color:var(--cream);}
+.modal p{font-size:.75rem;color:var(--muted2);margin-bottom:.82rem;line-height:1.45;}
+.field{margin-bottom:.56rem;}
+.flbl{font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.2rem;}
+.finput{
+  width:100%;background:rgba(255,255,255,.04);
+  border:1.5px solid var(--border);border-radius:12px;
+  padding:.65rem .88rem;font-size:.92rem;color:var(--text);transition:.18s;
+}
+.finput:focus{outline:none;border-color:var(--gold);background:rgba(255,204,0,.03);}
+.finput.green{border-color:rgba(0,232,122,.35);color:var(--green);}
+.finput.blue{border-color:rgba(61,159,255,.35);color:var(--blue);}
+.finput.purple{border-color:rgba(157,111,255,.35);color:var(--purple);}
+.finput.num{text-align:center;font-weight:900;font-size:1.1rem;}
 select.finput{cursor:pointer;}
-select.finput option{background:var(--card);}
-.mbtns{display:flex;gap:.5rem;margin-top:.9rem;}
-.mbtn{flex:1;padding:.7rem;border-radius:11px;border:none;font-size:.8rem;font-weight:800;cursor:pointer;transition:.15s;}
-.mbtn.cancel{background:var(--border);color:var(--muted);}
-.mbtn.ok-green{background:var(--green);color:#09091a;}
-.mbtn.ok-blue{background:var(--blue);color:#fff;}
-.mbtn.ok-purple{background:var(--purple);color:#fff;}
-.mbtn.ok-red{background:var(--red);color:#fff;}
-textarea.finput{height:70px;resize:none;font-size:.68rem;font-family:monospace;}
+select.finput option{background:var(--surface);}
+.mbtns{display:flex;gap:.46rem;margin-top:.86rem;}
+.mbtn{flex:1;padding:.66rem;border-radius:12px;border:none;font-size:.78rem;font-weight:800;cursor:pointer;transition:.18s;}
+.mbtn:active{transform:scale(.96);}
+.mbtn.cancel{background:rgba(255,255,255,.05);color:var(--muted);}
+.mbtn.ok-green{background:var(--green);color:#080810;box-shadow:0 4px 16px rgba(0,232,122,.25);}
+.mbtn.ok-blue{background:var(--blue);color:#fff;box-shadow:0 4px 16px rgba(61,159,255,.25);}
+.mbtn.ok-purple{background:var(--purple);color:#fff;box-shadow:0 4px 16px rgba(157,111,255,.25);}
+.mbtn.ok-red{background:var(--red);color:#fff;box-shadow:0 4px 16px rgba(255,59,92,.25);}
+textarea.finput{height:68px;resize:none;font-size:.66rem;font-family:monospace;}
 </style>
+
+  <link rel="manifest" id="pwa-manifest">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%2307070f'/><text y='.9em' font-size='80' x='10'>💰</text></svg>">
 </head>
 <body>
 
-<!-- SPLASH SCREEN -->
+<!-- SPLASH -->
 <div id="splash">
-  <!-- Background orbs -->
-  <div class="splash-orb o1"></div>
-  <div class="splash-orb o2"></div>
-  <div class="splash-orb o3"></div>
+  <!-- Aurora background -->
+  <div class="sp-aurora"></div>
 
-  <!-- Logo -->
-  <div class="splash-logo-wrap">
-    <div class="splash-ring"></div>
-    <div class="splash-ring r2"></div>
-    <div class="splash-logo">💰</div>
-  </div>
+  <!-- Floating particles -->
+  <div class="sp-particle" style="--c:rgba(0,232,122,.6);width:6px;height:6px;top:15%;left:12%;--d:3.2s;--tx:18px;--ty:-22px;--s:1.4;"></div>
+  <div class="sp-particle" style="--c:rgba(157,111,255,.5);width:4px;height:4px;top:25%;right:15%;--d:4.1s;--tx:-14px;--ty:18px;--s:1.2;"></div>
+  <div class="sp-particle" style="--c:rgba(61,159,255,.6);width:5px;height:5px;top:70%;left:20%;--d:3.8s;--tx:20px;--ty:-15px;--s:1.3;"></div>
+  <div class="sp-particle" style="--c:rgba(0,232,122,.4);width:8px;height:8px;top:65%;right:18%;--d:5s;--tx:-18px;--ty:12px;--s:.8;"></div>
+  <div class="sp-particle" style="--c:rgba(255,204,0,.4);width:4px;height:4px;top:40%;left:8%;--d:4.5s;--tx:12px;--ty:-20px;--s:1.5;"></div>
+  <div class="sp-particle" style="--c:rgba(157,111,255,.5);width:6px;height:6px;top:80%;right:25%;--d:3.5s;--tx:-10px;--ty:-18px;--s:1.2;"></div>
 
-  <!-- Name -->
-  <div class="splash-name">Student Budget</div>
-  <div class="splash-sub">☪️ Tracker · Seelow, Germany</div>
+  <!-- Center content -->
+  <div class="sp-content">
+    <!-- Orbiting icon -->
+    <div class="sp-icon-wrap">
+      <div class="sp-icon-glow"></div>
+      <div class="sp-orbit sp-o1"><div class="sp-orbit-dot"></div></div>
+      <div class="sp-orbit sp-o2"><div class="sp-orbit-dot"></div></div>
+      <div class="sp-icon">💰</div>
+    </div>
 
-  <!-- Cycling tips -->
-  <div class="splash-tips" id="splashTips">
-    <div class="splash-tip visible" id="st0">🛒 Loading your shopping lists...</div>
-    <div class="splash-tip" id="st1">💡 Tip: Aldi & Lidl have the best prices in Seelow</div>
-    <div class="splash-tip" id="st2">☪️ All meals in your plan are halal-friendly</div>
-    <div class="splash-tip" id="st3">📅 Your €100/month budget tracker is ready</div>
-    <div class="splash-tip" id="st4">🍽️ Meal plans are built from what you actually buy</div>
-    <div class="splash-tip" id="st5">💰 Saving €7 this month already? Amazing!</div>
-    <div class="splash-tip" id="st6">🌙 Dark & light mode — switch in Settings</div>
-    <div class="splash-tip" id="st7">✅ Almost ready — setting up your dashboard...</div>
-  </div>
+    <!-- App name -->
+    <div class="sp-title">Student<br><span>Budget Tracker</span></div>
+    <div class="sp-tagline">☪️ Your Smart Life Companion</div>
 
-  <!-- Progress -->
-  <div class="splash-progress-wrap">
-    <div class="splash-pct" id="splashPct">0%</div>
-    <div class="splash-bar"><div class="splash-bar-fill" id="splashFill"></div></div>
-    <div class="splash-dots">
-      <div class="splash-dot"></div>
-      <div class="splash-dot"></div>
-      <div class="splash-dot"></div>
+    <!-- Feature pills -->
+    <div class="sp-features">
+      <div class="sp-feat"><span>🛒</span> Shopping</div>
+      <div class="sp-feat"><span>🍽️</span> Meals</div>
+      <div class="sp-feat"><span>💊</span> Health</div>
+      <div class="sp-feat"><span>✦</span> More</div>
+    </div>
+
+    <!-- Progress bar — inline, centered below features -->
+    <div class="sp-bottom">
+      <div class="sp-bar-track"><div class="sp-bar-fill" id="spFill"></div></div>
+      <div class="sp-pct" id="spPct">Loading...</div>
+      <div class="sp-foot">Made for Hyderabadi Student · Seelow, Germany</div>
     </div>
   </div>
-
-  <div class="splash-made">Made with ❤️ for a Hyderabadi student in Germany</div>
 </div>
 
 <!-- TOP HEADER -->
@@ -462,29 +720,59 @@ textarea.finput{height:70px;resize:none;font-size:.68rem;font-family:monospace;}
 
 <!-- HOME -->
 <div class="screen on" id="scHome">
+
+  <!-- Greeting -->
   <div class="home-greeting">
     <h2 id="greetMsg">Good day! 👋</h2>
-    <p>Track your weekly spending and keep your €100/month budget on track.</p>
+    <p id="greetSub">Track your weekly spending and keep your €100/month budget on track.</p>
   </div>
 
-  <!-- 2 summary cards -->
-  <div class="sum-row">
-    <div class="sum-card">
-      <div class="sc-lbl">Monthly Spent</div>
-      <div class="sc-val" id="hMSpent" style="color:var(--red)">€0.00</div>
-      <div class="sc-sub">of €100 budget</div>
+  <!-- Hero budget ring card -->
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:22px;padding:1.2rem 1.1rem 1rem;margin-bottom:.75rem;position:relative;overflow:hidden;">
+    <div style="position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(0,232,122,.1),transparent 70%);pointer-events:none;"></div>
+    <div style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.65rem;">💰 Monthly Budget</div>
+    <div style="display:flex;align-items:flex-end;gap:.5rem;margin-bottom:.85rem;">
+      <div>
+        <div style="font-size:2.6rem;font-weight:900;color:var(--cream);letter-spacing:-.04em;line-height:1;" id="hMSpent">€0.00</div>
+        <div style="font-size:.68rem;color:var(--muted);margin-top:.1rem;">spent of <span style="color:var(--text);font-weight:700;">€100</span> this month</div>
+      </div>
+      <div style="margin-left:auto;text-align:right;">
+        <div style="font-size:1.5rem;font-weight:900;color:var(--green);letter-spacing:-.03em;" id="hMLeft">€100</div>
+        <div style="font-size:.62rem;color:var(--muted);">remaining</div>
+      </div>
     </div>
-    <div class="sum-card">
-      <div class="sc-lbl">Monthly Left</div>
-      <div class="sc-val" id="hMLeft" style="color:var(--green)">€100.00</div>
-      <div class="sc-sub">remaining</div>
+    <!-- Full-width progress -->
+    <div style="height:6px;background:rgba(255,255,255,.06);border-radius:6px;overflow:hidden;margin-bottom:.35rem;">
+      <div id="homeProg" style="height:100%;width:0%;background:linear-gradient(90deg,var(--green),var(--cyan));border-radius:6px;transition:width .5s cubic-bezier(.34,1.56,.64,1);"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:.55rem;color:var(--muted);">
+      <span>€0</span><span>€25</span><span>€50</span><span>€75</span><span>€100</span>
     </div>
   </div>
 
-  <!-- Monthly seg bar -->
+  <!-- 3 stat pills -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.52rem;margin-bottom:.75rem;">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:.7rem .6rem;text-align:center;">
+      <div style="font-size:.55rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.2rem;">This Week</div>
+      <div style="font-size:1.1rem;font-weight:900;color:var(--green);letter-spacing:-.025em;" id="homeWkSpent">€0</div>
+      <div style="font-size:.55rem;color:var(--muted);">of €25</div>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:.7rem .6rem;text-align:center;">
+      <div style="font-size:.55rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.2rem;">Saved</div>
+      <div style="font-size:1.1rem;font-weight:900;color:var(--cyan);letter-spacing:-.025em;" id="homeSaved">€100</div>
+      <div style="font-size:.55rem;color:var(--muted);">this month</div>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:.7rem .6rem;text-align:center;">
+      <div style="font-size:.55rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.2rem;">Ticked</div>
+      <div style="font-size:1.1rem;font-weight:900;color:var(--purple);letter-spacing:-.025em;" id="homeTicked">0</div>
+      <div style="font-size:.55rem;color:var(--muted);">items</div>
+    </div>
+  </div>
+
+  <!-- Segmented monthly bar -->
   <div class="m-card">
     <div class="m-row">
-      <span class="m-label">📅 Monthly Overview</span>
+      <span class="m-label">📅 4-Week Breakdown</span>
       <div class="m-nums">
         <div class="m-num"><div class="v" id="mSp" style="color:var(--red)">€0.00</div><div class="l">Spent</div></div>
         <div class="m-num"><div class="v" id="mLf" style="color:var(--green)">€100.00</div><div class="l">Left</div></div>
@@ -506,14 +794,13 @@ textarea.finput{height:70px;resize:none;font-size:.68rem;font-family:monospace;}
       <div class="wk-mini" id="wm3" onclick="goShop(3)"><div class="wml">Wk 3</div><div class="wms" id="ws3">€0.00</div><div class="wmr" id="wr3">€25 left</div></div>
       <div class="wk-mini" id="wm4" onclick="goShop(4)"><div class="wml">Wk 4</div><div class="wms" id="ws4">€0.00</div><div class="wmr" id="wr4">€25 left</div></div>
     </div>
-    <div class="m-chip" id="mChip">💡 Tap a week to start shopping!</div>
+    <div class="m-chip" id="mChip">💡 Tap a week card to jump to shopping</div>
   </div>
 
-  <!-- Quick week access -->
-  <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:.5rem;">Quick Access</div>
-  <div class="wk-btns" id="wkBtns">
-    <!-- filled by JS -->
-  </div>
+  <!-- Quick access weeks -->
+  <div style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.5rem;">⚡ Quick Access</div>
+  <div class="wk-btns" id="wkBtns"></div>
+
 </div>
 
 <!-- SHOPPING -->
@@ -577,16 +864,109 @@ textarea.finput{height:70px;resize:none;font-size:.68rem;font-family:monospace;}
   </div>
 </div>
 
-<!-- SETTINGS -->
+<!-- MORE SCREEN -->
+<div class="screen" id="scMore">
+  <div class="more-title">✨ More</div>
+  <div class="more-sub">Extra features & tools for your student life</div>
+  <div class="more-grid">
+
+    <div class="more-card health" onclick="showSupp()">
+      <div class="mc-ico" style="color:var(--green)">💊</div>
+      <div class="mc-name">Health Guide</div>
+      <div class="mc-sub">Supplements, B12, Vitamin D tracker</div>
+      <div class="mc-badge" style="background:rgba(0,245,160,.1);color:var(--green);border:1px solid rgba(0,245,160,.2)">Evidence-based</div>
+    </div>
+
+    <div class="more-card" style="border-color:rgba(255,214,10,.18)" onclick="showDiscounts()">
+      <div class="mc-ico" style="color:var(--gold)">🎟️</div>
+      <div class="mc-name">Student Discounts</div>
+      <div class="mc-sub">Amazon, Spotify, BahnCard & more</div>
+      <div class="mc-badge" style="background:rgba(255,214,10,.1);color:var(--gold);border:1px solid rgba(255,214,10,.2)">Save money</div>
+    </div>
+
+    <div class="more-card" style="border-color:rgba(255,100,80,.18)" onclick="showWeight()">
+      <div class="mc-ico" style="color:#ff8060">⚖️</div>
+      <div class="mc-name">BMI & Weight</div>
+      <div class="mc-sub">Calculate BMI & ideal weight range</div>
+      <div class="mc-badge" style="background:rgba(255,100,80,.1);color:#ff8060;border:1px solid rgba(255,100,80,.2)">Health tracker</div>
+    </div>
+
+    <div class="more-card" style="border-color:rgba(77,184,255,.18)" onclick="showPrayer()">
+      <div class="mc-ico" style="color:var(--blue)">🕌</div>
+      <div class="mc-name">Prayer Times</div>
+      <div class="mc-sub">Daily Salah schedule for Seelow</div>
+      <div class="mc-badge" style="background:rgba(77,184,255,.1);color:var(--blue);border:1px solid rgba(77,184,255,.2)">☪️ Islamic</div>
+    </div>
+
+    <div class="more-card" style="border-color:rgba(181,123,238,.18)" onclick="showStyle()">
+      <div class="mc-ico" style="color:var(--purple)">👗</div>
+      <div class="mc-name">Style on Budget</div>
+      <div class="mc-sub">Vinted, H&amp;M, Primark, thrift tips</div>
+      <div class="mc-badge" style="background:rgba(181,123,238,.1);color:var(--purple);border:1px solid rgba(181,123,238,.2)">Fashion</div>
+    </div>
+
+    <div class="more-card" style="border-color:rgba(0,200,255,.18)" onclick="showWater()">
+      <div class="mc-ico" style="color:#00d4ff">💧</div>
+      <div class="mc-name">Hydration</div>
+      <div class="mc-sub">Track your 8 glasses daily goal</div>
+      <div class="mc-badge" style="background:rgba(0,212,255,.1);color:#00d4ff;border:1px solid rgba(0,212,255,.2)">Wellness</div>
+    </div>
+
+    <div class="more-card" style="border-color:rgba(255,160,0,.18)" onclick="showDiabetes()">
+      <div class="mc-ico" style="color:#ffaa00">🩺</div>
+      <div class="mc-name">Sugar Awareness</div>
+      <div class="mc-sub">Hidden sugar in foods, healthy swaps</div>
+      <div class="mc-badge" style="background:rgba(255,160,0,.1);color:#ffaa00;border:1px solid rgba(255,160,0,.2)">Health info</div>
+    </div>
+
+    <div class="more-card" style="border-color:rgba(100,220,100,.18)" onclick="showStudyTools()">
+      <div class="mc-ico" style="color:#60dd60">🎓</div>
+      <div class="mc-name">Study Tools</div>
+      <div class="mc-sub">Pomodoro, GPA calc, exam countdown</div>
+      <div class="mc-badge" style="background:rgba(100,220,100,.1);color:#60dd60;border:1px solid rgba(100,220,100,.2)">Productivity</div>
+    </div>
+
+    <div class="more-card" style="border-color:rgba(255,80,120,.18)" onclick="showMood()">
+      <div class="mc-ico" style="color:#ff6090">🧠</div>
+      <div class="mc-name">Mood Tracker</div>
+      <div class="mc-sub">Daily mood log, stress tips & mindfulness</div>
+      <div class="mc-badge" style="background:rgba(255,80,120,.1);color:#ff6090;border:1px solid rgba(255,80,120,.2)">Wellbeing</div>
+    </div>
+
+    <div class="more-card" style="border-color:rgba(80,220,255,.18)" onclick="showWeather()">
+      <div class="mc-ico" style="color:#50dcff">🌤️</div>
+      <div class="mc-name">Seelow Weather</div>
+      <div class="mc-sub">Live weather + what to wear today</div>
+      <div class="mc-badge" style="background:rgba(80,220,255,.1);color:#50dcff;border:1px solid rgba(80,220,255,.2)">Live data</div>
+    </div>
+
+    <div class="more-card" style="border-color:rgba(255,200,0,.18)" onclick="showCV()">
+      <div class="mc-ico" style="color:#ffc800">📄</div>
+      <div class="mc-name">CV Builder</div>
+      <div class="mc-sub">German Lebenslauf tips & template</div>
+      <div class="mc-badge" style="background:rgba(255,200,0,.1);color:#ffc800;border:1px solid rgba(255,200,0,.2)">Career</div>
+    </div>
+
+    <div class="more-card" style="border-color:rgba(160,255,100,.18)" onclick="showSideHustle()">
+      <div class="mc-ico" style="color:#a0ff64">💼</div>
+      <div class="mc-name">Side Hustle</div>
+      <div class="mc-sub">Earn extra €€ as a student in Germany</div>
+      <div class="mc-badge" style="background:rgba(160,255,100,.1);color:#a0ff64;border:1px solid rgba(160,255,100,.2)">Earn more</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- SETTINGS SCREEN -->
 <div class="screen" id="scSettings">
-  <div style="font-size:1.05rem;font-weight:800;color:var(--cream);margin-bottom:1rem;">⚙️ Settings</div>
+  <div style="font-size:1.05rem;font-weight:800;color:var(--cream);margin-bottom:1rem;letter-spacing:-.02em;">⚙️ Settings</div>
 
   <div class="settings-section">
     <div class="settings-hd">Appearance</div>
     <div class="settings-row" onclick="toggleTheme()">
       <div class="sr-left">
         <div class="sr-icon">🌙</div>
-        <div><div class="sr-text">Dark Mode</div><div class="sr-sub">Switch between dark and light</div></div>
+        <div><div class="sr-text">Dark / Light Mode</div><div class="sr-sub">Switch between dark and light theme</div></div>
       </div>
       <button class="toggle" id="darkToggle" onclick="toggleTheme();event.stopPropagation()"></button>
     </div>
@@ -597,14 +977,14 @@ textarea.finput{height:70px;resize:none;font-size:.68rem;font-family:monospace;}
     <div class="settings-row" onclick="openSave()">
       <div class="sr-left">
         <div class="sr-icon">💾</div>
-        <div><div class="sr-text">Save Progress</div><div class="sr-sub">Generate a code — copy it to keep your data</div></div>
+        <div><div class="sr-text">Save Progress</div><div class="sr-sub">Generate a code to keep your data</div></div>
       </div>
       <div class="sr-right">›</div>
     </div>
     <div class="settings-row" onclick="openSave()">
       <div class="sr-left">
         <div class="sr-icon">⬆️</div>
-        <div><div class="sr-text">Restore Progress</div><div class="sr-sub">Paste your save code to bring back your data</div></div>
+        <div><div class="sr-text">Restore Progress</div><div class="sr-sub">Paste a save code to restore your data</div></div>
       </div>
       <div class="sr-right">›</div>
     </div>
@@ -631,28 +1011,37 @@ textarea.finput{height:70px;resize:none;font-size:.68rem;font-family:monospace;}
         <div><div class="sr-text">Nearby Stores</div><div class="sr-sub">Aldi · Lidl · Kaufland · Edeka · Netto</div></div>
       </div>
     </div>
+    <div class="settings-row" style="cursor:default;">
+      <div class="sr-left">
+        <div class="sr-icon">⚡</div>
+        <div><div class="sr-text">App Version</div><div class="sr-sub">v3.0 · Works offline (PWA)</div></div>
+      </div>
+    </div>
   </div>
 </div>
 
-<!-- ═══════════════════ BOTTOM TAB BAR ═══════════════════ -->
+<!-- ═══════════════ BOTTOM TAB BAR ═══════════════ -->
 <nav class="tab-bar">
   <button class="tab-item on" id="tHome" onclick="goTab('home')">
     <span class="t-ico">🏠</span><span class="t-lbl">Home</span>
   </button>
   <button class="tab-item" id="tShop" onclick="goTab('shop')">
-    <span class="t-ico">🛒</span><span class="t-lbl">Shopping</span>
+    <span class="t-ico">🛒</span><span class="t-lbl">Shop</span>
   </button>
   <button class="tab-item" id="tMeal" onclick="goTab('meal')">
     <span class="t-ico">🍽️</span><span class="t-lbl">Meals</span>
+  </button>
+  <button class="tab-item" id="tMore" onclick="goTab('more')">
+    <span class="t-ico">✦</span><span class="t-lbl">More</span>
   </button>
   <button class="tab-item" id="tSettings" onclick="goTab('settings')">
     <span class="t-ico">⚙️</span><span class="t-lbl">Settings</span>
   </button>
 </nav>
 
-<!-- ═══════════════════ MODALS ═══════════════════ -->
+<!-- ═══════════════ MODALS ═══════════════ -->
 
-<!-- Price -->
+<!-- Price Modal -->
 <div class="overlay" id="ovPrice" onclick="bgClose(event,'ovPrice')">
   <div class="modal" onclick="event.stopPropagation()">
     <h3>💶 Update Price</h3>
@@ -662,17 +1051,17 @@ textarea.finput{height:70px;resize:none;font-size:.68rem;font-family:monospace;}
   </div>
 </div>
 
-<!-- Name -->
+<!-- Name Modal -->
 <div class="overlay" id="ovName" onclick="bgClose(event,'ovName')">
   <div class="modal" onclick="event.stopPropagation()">
-    <h3>✏️ Rename</h3>
+    <h3>✏️ Rename Product</h3>
     <p id="nameP">Update the product name</p>
     <div class="field"><div class="flbl">Name</div><input class="finput blue" type="text" id="nameI" placeholder="Product name..."></div>
     <div class="mbtns"><button class="mbtn cancel" onclick="closeModal('ovName')">Cancel</button><button class="mbtn ok-blue" onclick="saveName()">✓ Save</button></div>
   </div>
 </div>
 
-<!-- Store -->
+<!-- Store Modal -->
 <div class="overlay" id="ovStore" onclick="bgClose(event,'ovStore')">
   <div class="modal" onclick="event.stopPropagation()">
     <h3>🏪 Change Store</h3>
@@ -690,7 +1079,7 @@ textarea.finput{height:70px;resize:none;font-size:.68rem;font-family:monospace;}
   </div>
 </div>
 
-<!-- Add -->
+<!-- Add Product Modal -->
 <div class="overlay" id="ovAdd" onclick="bgClose(event,'ovAdd')">
   <div class="modal" onclick="event.stopPropagation()">
     <h3>➕ Add Product</h3>
@@ -724,7 +1113,7 @@ textarea.finput{height:70px;resize:none;font-size:.68rem;font-family:monospace;}
   </div>
 </div>
 
-<!-- Remove -->
+<!-- Remove Modal -->
 <div class="overlay" id="ovRemove" onclick="bgClose(event,'ovRemove')">
   <div class="modal" onclick="event.stopPropagation()">
     <h3>🗑️ Remove Item?</h3>
@@ -733,27 +1122,16 @@ textarea.finput{height:70px;resize:none;font-size:.68rem;font-family:monospace;}
   </div>
 </div>
 
-<!-- Save/Load -->
+<!-- Save/Load Modal -->
 <div class="overlay" id="ovSave" onclick="bgClose(event,'ovSave')">
   <div class="modal" onclick="event.stopPropagation()">
     <h3>💾 Save & Restore</h3>
-    <p style="color:var(--gold);font-size:.78rem;font-weight:600;">⚠️ Data is NOT saved automatically. Copy your save code to keep your progress.</p>
-
-    <div class="field">
-      <div class="flbl">Step 1 — Copy this save code</div>
-      <textarea class="finput" id="saveOut" readonly onclick="this.select()" style="height:80px;"></textarea>
-      <button onclick="(()=>{const a=document.getElementById('saveOut');a.select();try{document.execCommand('copy');}catch(e){}alert('✅ Code copied! Paste it somewhere safe (Notes, WhatsApp, email).');})()" style="margin-top:.5rem;width:100%;padding:.55rem;border-radius:9px;background:var(--gold);border:none;color:#09091a;font-weight:800;font-size:.82rem;cursor:pointer;">📋 Copy Code</button>
+    <p style="color:var(--gold);font-size:.76rem;font-weight:600;">⚠️ Copy your save code to keep progress across devices.</p>
+    <div class="field"><div class="flbl">Step 1 — Your save code</div><textarea class="finput" id="saveOut" readonly onclick="this.select()" style="height:72px;"></textarea>
+      <button onclick="(()=>{const a=document.getElementById('saveOut');a.select();try{document.execCommand('copy');}catch(e){}alert('✅ Copied! Paste it in Notes or WhatsApp to yourself.');})();" style="width:100%;margin-top:.45rem;padding:.55rem;border-radius:9px;background:var(--gold);border:none;color:#07070f;font-weight:800;font-size:.8rem;cursor:pointer;">📋 Copy Code</button>
     </div>
-
-    <div class="field" style="margin-top:.8rem;">
-      <div class="flbl">Step 2 — To restore: paste your code here</div>
-      <textarea class="finput" id="saveIn" placeholder="Paste your save code here then tap Restore..." style="height:80px;"></textarea>
-    </div>
-
-    <div class="mbtns">
-      <button class="mbtn cancel" onclick="closeModal('ovSave')">Close</button>
-      <button class="mbtn ok-green" onclick="doLoad()">⬆️ Restore Data</button>
-    </div>
+    <div class="field" style="margin-top:.6rem"><div class="flbl">Step 2 — Paste code to restore</div><textarea class="finput" id="saveIn" placeholder="Paste your save code here..." style="height:72px;"></textarea></div>
+    <div class="mbtns"><button class="mbtn cancel" onclick="closeModal('ovSave')">Close</button><button class="mbtn ok-green" onclick="doLoad()">⬆️ Restore</button></div>
   </div>
 </div>
 
@@ -1113,6 +1491,19 @@ function updateUI(){
   else if(mr>=0){mc.className='m-chip warn';mc.innerHTML=`⚠️ Getting close — <strong>€${mr.toFixed(2)}</strong> left.`;}
   else{mc.className='m-chip bad';mc.innerHTML=`🚨 Over budget by <strong>€${Math.abs(mr).toFixed(2)}</strong>!`;}
 
+  // ── Home hero card extra stats ──
+  const homeP = document.getElementById('homeProg');
+  if(homeP) homeP.style.width = Math.min(mTotal/100*100,100)+'%';
+  const hws = document.getElementById('homeWkSpent');
+  if(hws) hws.textContent = '€'+wkSpent(CW).toFixed(0);
+  const hsv = document.getElementById('homeSaved');
+  if(hsv){ const sv=Math.max(100-mTotal,0); hsv.textContent='€'+sv.toFixed(0); hsv.style.color=sv>10?'var(--cyan)':'var(--gold)'; }
+  const htk = document.getElementById('homeTicked');
+  if(htk){ let tot=0;[1,2,3,4].forEach(w=>{(BI[w]||[]).forEach(cat=>{cat.items.forEach(i=>{if(ST.chk[i.id])tot++;});});});htk.textContent=tot; }
+  // home hMSpent / hMLeft
+  const hmSp=document.getElementById('hMSpent'); if(hmSp) hmSp.textContent='€'+mTotal.toFixed(2);
+  const hmLf=document.getElementById('hMLeft'); if(hmLf){ hmLf.textContent='€'+Math.max(100-mTotal,0).toFixed(0); hmLf.style.color=(100-mTotal)<0?'var(--red)':'var(--green)'; }
+
   // ── Home quick-access week buttons ──
   const wb=document.getElementById('wkBtns');
   if(wb){
@@ -1130,11 +1521,20 @@ function updateUI(){
     });
   }
 
-  // ── Greeting ──
-  const h=new Date().getHours();
-  const gr=h<12?'Good morning':'h<17'?'Good afternoon':'Good evening';
-  const el=document.getElementById('greetMsg');
-  if(el)el.textContent=(h<12?'Good morning ☀️':h<17?'Good afternoon 🌤️':'Good evening 🌙');
+  // ── Greeting based on user's local timezone ──
+  const now=new Date();
+  const h=now.getHours();
+  const greetEl=document.getElementById('greetMsg');
+  if(greetEl){
+    let g,sub;
+    if(h>=5&&h<12){g='Good Morning ☀️';sub='Start your day right!';}
+    else if(h>=12&&h<17){g='Good Afternoon 🌤️';sub='Keep up the momentum!';}
+    else if(h>=17&&h<21){g='Good Evening 🌆';sub='Almost done for today!';}
+    else{g='Good Night 🌙';sub='Rest well, study hard tomorrow!';}
+    greetEl.textContent=g;
+    const subEl=document.getElementById('greetSub');
+    if(subEl)subEl.textContent=sub;
+  }
 
   
 }
@@ -1142,18 +1542,34 @@ function updateUI(){
 // ════════════════════════════════════════════
 //  NAVIGATION
 // ════════════════════════════════════════════
-const TABS={home:'scHome',shop:'scShop',meal:'scMeal',settings:'scSettings'};
-const TBTNS={home:'tHome',shop:'tShop',meal:'tMeal',settings:'tSettings'};
+const TABS={home:'scHome',shop:'scShop',meal:'scMeal',more:'scMore',settings:'scSettings'};
+const TBTNS={home:'tHome',shop:'tShop',meal:'tMeal',more:'tMore',settings:'tSettings'};
+
+function showSupp(){
+  // Hide More screen, show Supp screen (keep More tab active)
+  document.getElementById('scMore').classList.remove('on');
+  document.getElementById('scSupp').classList.add('on');
+  renderSupp();
+}
+function hideSupp(){
+  document.getElementById('scSupp').classList.remove('on');
+  document.getElementById('scMore').classList.add('on');
+}
 let currentTab='home';
 
 function goTab(tab){
   currentTab=tab;
+  // Hide all More sub-screens whenever switching main tabs
+  if(MORE_SUBS) MORE_SUBS.forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('on');});
   Object.entries(TABS).forEach(([k,sid])=>{
     document.getElementById(sid).classList.toggle('on',k===tab);
     document.getElementById(TBTNS[k]).classList.toggle('on',k===tab);
   });
+  // Hide supp sub-screen whenever switching tabs
+  const suppEl=document.getElementById('scSupp');
+  if(suppEl)suppEl.classList.remove('on');
   // Update top header subtitle
-  const subs={home:'Overview',shop:`Week ${CW} Shopping`,meal:'Meal Plan',settings:'Settings'};
+  const subs={home:'Overview',shop:`Week ${CW} Shopping`,meal:'Meal Plan',more:'More Features',settings:'Settings'};
   document.getElementById('topSub').textContent=subs[tab]||'';
   if(tab==='shop')updateUI();
 }
@@ -1484,9 +1900,185 @@ function genMeal(){
   document.getElementById('mpBody').innerHTML=html;
 }
 
+
 // ════════════════════════════════════════════
-//  THEME
+//  SUPPLEMENTS
 // ════════════════════════════════════════════
+const SUPPS=[
+  {id:1,name:'Vitamin B12',emoji:'⚡',cat:'Energy',priority:'HIGH',color:'#FF6B35',
+   why:'Essential for red blood cell formation and converting food into energy (ATP). Deficiency causes fatigue and brain fog.',
+   dose:'1000 mcg daily',when:'Morning with breakfast',food:'Eggs, meat, fish, dairy',
+   helps:['Fatigue','Brain fog','Weakness','Low stamina'],
+   tip:'Take consistently every morning — gaps drastically reduce its effectiveness.'},
+  {id:2,name:'Magnesium',emoji:'🌙',cat:'Sleep & Muscle',priority:'HIGH',color:'#6C63FF',
+   why:'Involved in 300+ biochemical reactions. Deficiency leads to fatigue, muscle cramps, poor sleep and low energy.',
+   dose:'300–400 mg daily',when:'Evening before bed',food:'Nuts, seeds, dark chocolate, leafy greens',
+   helps:['Poor sleep','Muscle pain','Neck tension','Anxiety'],
+   tip:'Take Magnesium Glycinate form — absorbs best and won\'t upset your stomach.'},
+  {id:3,name:'Vitamin D3',emoji:'☀️',cat:'Hormones & Mood',priority:'HIGH',color:'#FFB800',
+   why:'Supports testosterone, immune function, mood and bone strength. Most people in Germany are deficient.',
+   dose:'2000–4000 IU daily',when:'Morning with a fatty meal',food:'Sunlight, fatty fish, egg yolks',
+   helps:['Low mood','Fatigue','Weak bones','Low testosterone'],
+   tip:'Take with Vitamin K2 (100mcg) for better calcium absorption and heart safety.'},
+  {id:4,name:'Iron',emoji:'🩸',cat:'Blood & Oxygen',priority:'MEDIUM',color:'#E63946',
+   why:'Carries oxygen in blood to muscles and brain. Iron deficiency is the #1 nutritional cause of fatigue.',
+   dose:'Only if deficient — get tested first',when:'Morning on empty stomach',food:'Red meat, spinach, lentils, beans',
+   helps:['Extreme tiredness','Dizziness','Pale skin','Breathlessness'],
+   tip:'Do NOT take with calcium — they block each other. Take with Vitamin C for better absorption.'},
+  {id:5,name:'CoQ10',emoji:'🔋',cat:'Cellular Energy',priority:'MEDIUM',color:'#2EC4B6',
+   why:'Fuels mitochondria — your cells\' power generators. Supports heart health and reduces fatigue.',
+   dose:'100–200 mg daily',when:'Morning with a fatty meal',food:'Organ meats, sardines, beef',
+   helps:['Physical fatigue','Low stamina','Poor recovery'],
+   tip:'Choose Ubiquinol form — it\'s far better absorbed than standard CoQ10.'},
+  {id:6,name:'Zinc',emoji:'💪',cat:'Testosterone & Immunity',priority:'MEDIUM',color:'#06D6A0',
+   why:'Critical for testosterone production, immune function, protein synthesis and muscle recovery.',
+   dose:'15–30 mg daily',when:'Evening with food',food:'Oysters, beef, pumpkin seeds, chickpeas',
+   helps:['Low libido','Slow recovery','Frequent illness','Hair loss'],
+   tip:'Don\'t exceed 40mg/day. Zinc Picolinate form absorbs best.'},
+  {id:7,name:'Ashwagandha',emoji:'🌿',cat:'Stress & Testosterone',priority:'MEDIUM',color:'#8DB580',
+   why:'Adaptogen herb that lowers cortisol (stress hormone), boosts testosterone and improves sleep quality.',
+   dose:'300–600 mg daily',when:'Evening with food',food:'Supplement only',
+   helps:['Stress','Anxiety','Low testosterone','Poor sleep'],
+   tip:'Takes 4–8 weeks to notice full effect. Consistency is key — do not skip.'},
+  {id:8,name:'Vitamin C',emoji:'🍊',cat:'Immunity & Recovery',priority:'LOW',color:'#FF9F1C',
+   why:'Antioxidant that supports immunity, iron absorption, collagen and reduces oxidative stress after exercise.',
+   dose:'500–1000 mg daily',when:'With any meal',food:'Oranges, kiwi, bell peppers, broccoli',
+   helps:['Slow healing','Frequent illness','Low energy'],
+   tip:'Take alongside Iron supplements — it dramatically improves iron absorption.'},
+];
+
+const SUPP_SCHED=[
+  {time:'🌅 Morning (with breakfast)',items:['Vitamin B12','Vitamin D3','CoQ10','Vitamin C']},
+  {time:'🌙 Evening (with dinner)',items:['Zinc','Ashwagandha']},
+  {time:'😴 Before bed',items:['Magnesium']},
+  {time:'🩺 Only if deficient (get blood test)',items:['Iron']},
+];
+
+const SUPP_RULES=[
+  'Never take Iron + Calcium at the same time',
+  'Take fat-soluble vitamins (D3, CoQ10) with a meal containing fat',
+  'Take every single day — no gaps — for best results',
+  'Drink plenty of water throughout the day',
+  'Real food first — supplements fill gaps, not replace diet',
+];
+
+let suppOpenId=null;
+let suppChecked={};
+let suppTab='guide';
+
+function setSuppTab(t){
+  suppTab=t;
+  document.querySelectorAll('.supp-tab').forEach((el,i)=>{
+    el.classList.toggle('on',['guide','schedule','tracker'][i]===t);
+  });
+  document.getElementById('suppGuide').style.display=t==='guide'?'block':'none';
+  document.getElementById('suppSchedule').style.display=t==='schedule'?'block':'none';
+  document.getElementById('suppTracker').style.display=t==='tracker'?'block':'none';
+  if(t==='tracker')renderSuppTracker();
+  if(t==='schedule')renderSuppSchedule();
+}
+
+function renderSupp(){
+  renderSuppGuide();
+  renderSuppSchedule();
+  renderSuppTracker();
+}
+
+function renderSuppGuide(){
+  const el=document.getElementById('suppList');
+  let h='';
+  SUPPS.forEach(s=>{
+    const pc={HIGH:'rgba(255,107,53,.15)',MEDIUM:'rgba(255,184,0,.12)',LOW:'rgba(6,214,160,.12)'}[s.priority];
+    const tc={HIGH:'#FF6B35',MEDIUM:'#FFB800',LOW:'#06D6A0'}[s.priority];
+    const isOpen=suppOpenId===s.id;
+    h+=`<div class="supp-card${isOpen?' open':''}" onclick="toggleSupp(${s.id})" style="border-color:${isOpen?s.color+'66':''}">
+      <div class="supp-icon" style="background:${s.color}22">${s.emoji}</div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.18rem">
+          <span style="font-weight:700;font-size:.88rem">${s.name}</span>
+          <span class="supp-badge" style="background:${pc};color:${tc}">${s.priority}</span>
+        </div>
+        <div style="color:var(--muted);font-size:.68rem">${s.cat} · ${s.dose}</div>
+      </div>
+      <div style="color:${s.color};font-size:1.1rem;font-weight:700">${isOpen?'−':'+'}</div>
+    </div>`;
+    if(isOpen){
+      h+=`<div class="supp-expand" style="border-color:${s.color}33">
+        <div style="color:var(--muted);font-size:.75rem;line-height:1.6;margin-bottom:.5rem">${s.why}</div>
+        <div class="supp-grid">
+          <div class="supp-cell"><div class="supp-cell-lbl">💊 Dose</div><div class="supp-cell-val">${s.dose}</div></div>
+          <div class="supp-cell"><div class="supp-cell-lbl">⏰ When</div><div class="supp-cell-val">${s.when}</div></div>
+          <div class="supp-cell full"><div class="supp-cell-lbl">🥗 Food Sources</div><div class="supp-cell-val">${s.food}</div></div>
+        </div>
+        <div style="font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.38rem">Helps with</div>
+        <div class="supp-chips">${s.helps.map(h=>`<span class="supp-chip" style="background:${s.color}22;color:${s.color}">${h}</span>`).join('')}</div>
+        <div class="supp-tip" style="background:${s.color}11;border:1px solid ${s.color}33;color:var(--muted)">
+          💡 <strong style="color:${s.color}">Pro Tip:</strong> ${s.tip}
+        </div>
+      </div>`;
+    }
+  });
+  el.innerHTML=h;
+}
+
+function toggleSupp(id){
+  suppOpenId=suppOpenId===id?null:id;
+  renderSuppGuide();
+}
+
+function renderSuppSchedule(){
+  let h='';
+  SUPP_SCHED.forEach(slot=>{
+    h+=`<div class="sched-slot"><div class="sched-time">${slot.time}</div>`;
+    slot.items.forEach(name=>{
+      const s=SUPPS.find(x=>x.name===name);
+      if(!s)return;
+      h+=`<div class="sched-item">
+        <span style="font-size:1.2rem">${s.emoji}</span>
+        <div style="flex:1"><div style="font-size:.82rem;font-weight:600">${s.name}</div>
+        <div style="color:var(--muted);font-size:.67rem">${s.dose}</div></div>
+      </div>`;
+    });
+    h+='</div>';
+  });
+  document.getElementById('suppSchedBody').innerHTML=h;
+  document.getElementById('suppRules').innerHTML=SUPP_RULES.map(r=>`<div class="rule-row"><span style="color:var(--green);flex-shrink:0">→</span>${r}</div>`).join('');
+}
+
+function renderSuppTracker(){
+  const el=document.getElementById('suppTrackerList');
+  let h='';
+  SUPPS.forEach(s=>{
+    const done=!!suppChecked[s.name];
+    h+=`<div class="trk-item" onclick="toggleTrk('${s.name}')" style="border-color:${done?s.color+'66':''}; background:${done?s.color+'0f':''}">
+      <div class="trk-check" style="border-color:${done?s.color:''}; background:${done?s.color:'transparent'}">${done?'✓':''}</div>
+      <span style="font-size:1.15rem">${s.emoji}</span>
+      <div style="flex:1">
+        <div style="font-size:.85rem;font-weight:600;${done?'text-decoration:line-through;color:var(--muted)':''}">${s.name}</div>
+        <div style="color:var(--muted);font-size:.67rem">${s.dose}</div>
+      </div>
+    </div>`;
+  });
+  el.innerHTML=h;
+  const taken=Object.values(suppChecked).filter(Boolean).length;
+  const total=SUPPS.length;
+  const pct=Math.round(taken/total*100);
+  document.getElementById('suppTrackerScore').innerHTML=`
+    <div style="font-size:2rem;font-weight:800;color:var(--gold)">${taken}/${total}</div>
+    <div style="color:var(--muted);font-size:.72rem;margin-bottom:.5rem">supplements taken today</div>
+    <div style="height:6px;background:var(--border);border-radius:6px;overflow:hidden;margin:0 1rem">
+      <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--green),#2dd4bf);border-radius:6px;transition:width .4s"></div>
+    </div>
+    ${taken===total?'<div style="color:var(--green);font-size:.8rem;margin-top:.6rem">🎉 All done for today! Great job.</div>':''}
+  `;
+}
+
+function toggleTrk(name){
+  suppChecked[name]=!suppChecked[name];
+  renderSuppTracker();
+}
+
+
 function applyTheme(mode){
   const isLight=mode==='light';
   document.body.classList.toggle('light',isLight);
@@ -1516,72 +2108,645 @@ document.getElementById('nameI').addEventListener('keydown',e=>{if(e.key==='Ente
 // ════════════════════════════════════════════
 //  SPLASH SCREEN — 12 second loading experience
 // ════════════════════════════════════════════
-window.addEventListener('DOMContentLoaded', function(){
-  const DURATION = 12000;
-  const fill = document.getElementById('splashFill');
-  const pctEl = document.getElementById('splashPct');
-  const tips = document.querySelectorAll('.splash-tip');
-  let currentTip = 0;
-  let startTime = null;
-  let tipTimer = null;
 
-  if(!fill || !pctEl){ return; } // safety — if elements missing skip
 
-  function easeProgress(t){
-    return t < .5 ? 2*t*t : 1 - Math.pow(-2*t+2, 2)/2;
-  }
+// ── SPLASH — 3s cinematic ──
+(function(){
+  var fill  = document.getElementById('spFill');
+  var pctEl = document.getElementById('spPct');
+  var splash= document.getElementById('splash');
+  var start = null;
+  var TOTAL = 3000;
+  var msgs  = ['Preparing your budget...','Loading meal plans...','Setting up health tools...','Almost ready...'];
+  var msgIdx= 0;
 
-  function updateBar(ts){
-    if(!startTime) startTime = ts;
-    const elapsed = ts - startTime;
-    const raw = Math.min(elapsed / DURATION, 1);
-    const progress = easeProgress(raw);
-    const val = Math.round(progress * 100);
-    fill.style.width = val + '%';
-    pctEl.textContent = val + '%';
+  var msgTimer = setInterval(function(){
+    msgIdx = (msgIdx+1) % msgs.length;
+    if(pctEl && msgIdx < msgs.length-1) pctEl.textContent = msgs[msgIdx];
+  }, 750);
+
+  function ease(t){ return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2; }
+
+  function step(ts){
+    if(!start) start = ts;
+    var raw = Math.min((ts-start)/TOTAL, 1);
+    var val = Math.round(ease(raw)*100);
+    if(fill) fill.style.width = val+'%';
+    if(raw >= .98 && pctEl) pctEl.textContent = 'Ready! ✓';
     if(raw < 1){
-      requestAnimationFrame(updateBar);
+      requestAnimationFrame(step);
     } else {
-      setTimeout(hideSplash, 500);
+      clearInterval(msgTimer);
+      setTimeout(function(){
+        if(splash){
+          splash.style.transition='opacity .65s ease, transform .65s ease';
+          splash.style.opacity='0';
+          splash.style.transform='scale(1.04)';
+          setTimeout(function(){
+            if(splash.parentNode) splash.parentNode.removeChild(splash);
+          }, 700);
+        }
+      }, 300);
     }
   }
-
-  function cycleTip(){
-    tips.forEach(t => t.classList.remove('visible'));
-    currentTip = (currentTip + 1) % tips.length;
-    if(tips[currentTip]) tips[currentTip].classList.add('visible');
-  }
-
-  function hideSplash(){
-    const splash = document.getElementById('splash');
-    if(!splash) return;
-    clearInterval(tipTimer);
-    // Fade + scale out
-    splash.style.transition = 'opacity .8s ease, transform .8s ease';
-    splash.style.opacity = '0';
-    splash.style.transform = 'scale(1.05)';
-    setTimeout(() => {
-      if(splash.parentNode) splash.parentNode.removeChild(splash);
-    }, 850);
-  }
-
-  // Start bar after logo animation (1.2s delay)
-  setTimeout(() => requestAnimationFrame(updateBar), 1200);
-
-  // Cycle tips every 1.4s
-  tipTimer = setInterval(cycleTip, 1400);
-});
+  requestAnimationFrame(step);
+})();
 
 // ════════════════════════════════════════════
 //  INIT
 // ════════════════════════════════════════════
-[1,2,3,4].forEach(w=>{REM[w]=new Set();});
-loadLS();  // auto-load saved data on startup
-[1,2,3,4].forEach(w=>{if(!(REM[w] instanceof Set))REM[w]=new Set();}); // safety net
-ST=normST(ST);
-applyTheme(localStorage.getItem('_theme')||'dark');
-render();
-goTab('home');
+try{
+  [1,2,3,4].forEach(w=>{REM[w]=new Set();});
+  loadLS();
+  [1,2,3,4].forEach(w=>{if(!(REM[w] instanceof Set))REM[w]=new Set();});
+  ST=normST(ST);
+  applyTheme(localStorage.getItem('_theme')||'dark');
+  render();
+  goTab('home');
+}catch(e){
+  console.error('Init error:',e);
+  const splash=document.getElementById('splash');
+  if(splash){splash.style.transition='opacity .6s';splash.style.opacity='0';setTimeout(()=>{if(splash.parentNode)splash.parentNode.removeChild(splash);},700);}
+}
+
+// ════════════════════════════════════════════
+//  MORE SCREEN HELPERS
+// ════════════════════════════════════════════
+function hideMore(id){
+  document.getElementById(id).classList.remove('on');
+  document.getElementById('scMore').classList.add('on');
+}
+
+function showMore(id, renderFn){
+  document.getElementById('scMore').classList.remove('on');
+  document.getElementById(id).classList.add('on');
+  if(renderFn) renderFn();
+}
+
+function showDiscounts(){ showMore('scDiscounts', renderDiscounts); }
+function showWeight()   { showMore('scWeight', null); }
+function showPrayer()   { showMore('scPrayer', renderPrayer); }
+function showStyle()    { showMore('scStyle', renderStyle); }
+function showWater()    { showMore('scWater', renderWater); }
+function showDiabetes() { showMore('scDiabetes', renderDiabetes); }
+function showStudyTools(){ showMore('scStudy', renderStudy); }
+
+var MORE_SUBS=['scDiscounts','scWeight','scPrayer','scStyle','scWater','scDiabetes','scStudy','scSupp','scMood','scWeather','scCV','scSideHustle'];
+
+// ── DISCOUNTS ──
+function renderDiscounts(){
+  const deals=[
+    {cat:'🚌 Transport',items:[
+      {name:'Semesterticket',desc:'Included in semester fee — unlimited train/bus in Brandenburg region. Check with your Uni!',save:'~€300/semester'},
+      {name:'Deutschlandticket Student',desc:'€29/month nationwide public transport (students). Apply via your Uni.',save:'€20 off regular price'},
+      {name:'BahnCard 25',desc:'25% off all Deutsche Bahn tickets. Costs ~€62/yr but pays off fast.',save:'25% per trip'},
+    ]},
+    {cat:'🛍️ Shopping & Subscriptions',items:[
+      {name:'Amazon Prime Student',desc:'6 months free, then 50% off. Use .edu or university email to verify.',save:'€4.24/month after trial'},
+      {name:'Spotify Student',desc:'€5.99/month (vs €10.99 regular). Verify via SheerID with student email.',save:'45% off'},
+      {name:'Apple Music Student',desc:'€5.99/month. Verify via UNiDAYS.',save:'40% off'},
+      {name:'UNiDAYS',desc:'Free platform — H&M, ASOS, Nike, Adidas, Samsung, Dell all offer student discounts.',save:'10–30% various brands'},
+      {name:'Student Beans',desc:'Similar to UNiDAYS. Register free with student email for extra brand deals.',save:'Up to 50% some brands'},
+    ]},
+    {cat:'🎬 Entertainment',items:[
+      {name:'Cinema (CineStar/Cinedom)',desc:'Show student ID for ~€2 off any screening. Some have fixed student days.',save:'€2–3 per ticket'},
+      {name:'Museums (Berlin)',desc:'Berlin Museum Pass ~€25 valid 1 year, unlimited visits to all public museums.',save:'€100+ per year'},
+      {name:'Spotify x Hulu bundle (Germany)',desc:'Streaming at student price via student verification.',save:'Up to 40% off'},
+    ]},
+    {cat:'💪 Fitness & Wellness',items:[
+      {name:'Urban Sports Club',desc:'Send your Immatrikulationsbescheinigung (enrollment cert) for €10/month discount.',save:'€10/month'},
+      {name:'ISIC Card (~€15/yr)',desc:'International Student Identity Card — recognized globally. Discounts on travel, hostels, museums worldwide.',save:'Hundreds per year if travelling'},
+    ]},
+    {cat:'💻 Software & Tech',items:[
+      {name:'Microsoft 365',desc:'Free via most German universities through Microsoft Imagine / Azure Dev Tools.',save:'€100/year'},
+      {name:'Adobe Creative Cloud',desc:'~€20/month student plan (vs €55 regular). Verify at adobe.com/students.',save:'60% off'},
+      {name:'JetBrains',desc:'All JetBrains IDEs free for students. Apply at jetbrains.com/student.',save:'€300+/year'},
+      {name:'GitHub Student Pack',desc:'Free GitHub Pro + 100+ tools including domains, cloud credits, coding tools.',save:'€200+ value free'},
+    ]},
+  ];
+  let html='';
+  deals.forEach(cat=>{
+    html+=`<div class="sched-group"><div class="sched-time">${cat.cat}</div>`;
+    cat.items.forEach(item=>{
+      html+=`<div class="sched-item" style="flex-direction:column;align-items:flex-start;gap:.25rem;padding:.75rem .9rem;">
+        <div style="display:flex;justify-content:space-between;width:100%;align-items:center;">
+          <div class="sched-name">${item.name}</div>
+          <span style="font-size:.62rem;font-weight:700;color:var(--green);background:var(--gdim);padding:.1rem .4rem;border-radius:6px;border:1px solid rgba(0,245,160,.2);white-space:nowrap;">${item.save}</span>
+        </div>
+        <div class="sched-note">${item.desc}</div>
+      </div>`;
+    });
+    html+='</div>';
+  });
+  document.getElementById('discountBody').innerHTML=html;
+}
+
+// ── BMI ──
+function calcBMI(){
+  const w=parseFloat(document.getElementById('bmiWeight').value);
+  const h=parseFloat(document.getElementById('bmiHeight').value)/100;
+  if(!w||!h||h<=0){alert('Please enter both weight and height.');return;}
+  const bmi=(w/(h*h)).toFixed(1);
+  let cat,col,advice;
+  if(bmi<18.5){cat='Underweight';col='var(--blue)';advice='Consider increasing caloric intake with nutritious halal foods like rice, eggs, lentils and peanut butter.';}
+  else if(bmi<25){cat='Healthy Weight ✓';col='var(--green)';advice='Great! Maintain with balanced meals and regular activity. Your current meal plan supports this well.';}
+  else if(bmi<30){cat='Overweight';col='var(--gold)';advice='Focus on portion control, reduce processed foods, and add 30 min of walking daily.';}
+  else{cat='Obese';col='var(--red)';advice='Consider speaking with a doctor. Small steps: walk more, reduce sugar, eat more vegetables.';}
+  const idealMin=(18.5*h*h).toFixed(1);
+  const idealMax=(24.9*h*h).toFixed(1);
+  document.getElementById('bmiResult').innerHTML=`
+    <div class="m-card" style="text-align:center;margin-bottom:.75rem;">
+      <div style="font-size:3rem;font-weight:900;color:${col};">${bmi}</div>
+      <div style="font-size:.88rem;font-weight:700;color:${col};margin:.2rem 0;">${cat}</div>
+      <div style="font-size:.72rem;color:var(--muted);">Ideal weight for your height: ${idealMin}–${idealMax} kg</div>
+    </div>
+    <div class="supp-tip">${advice}</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem;margin-top:.75rem;">
+      ${[['<18.5','Underweight','var(--blue)'],['18.5–24.9','Healthy','var(--green)'],['25–29.9','Overweight','var(--gold)'],['30+','Obese','var(--red)']].map(([r,l,col])=>`
+      <div class="m-card" style="text-align:center;padding:.6rem;">
+        <div style="font-size:.72rem;font-weight:700;color:${col};">${r}</div>
+        <div style="font-size:.65rem;color:var(--muted);">${l}</div>
+      </div>`).join('')}
+    </div>`;
+}
+
+// ── PRAYER TIMES ──
+function renderPrayer(){
+  // Approximate fixed times for Seelow (52.15°N) — changes by month
+  const month = new Date().getMonth();
+  // Summer/Winter approximate times
+  const times = [
+    {name:'Fajr 🌙',summer:'03:45',winter:'06:15'},
+    {name:'Sunrise ☀️',summer:'05:00',winter:'07:50'},
+    {name:'Dhuhr 🌤️',summer:'13:15',winter:'12:30'},
+    {name:'Asr 🌥️',summer:'17:30',winter:'14:45'},
+    {name:'Maghrib 🌅',summer:'21:20',winter:'16:15'},
+    {name:'Isha 🌙',summer:'23:00',winter:'18:00'},
+  ];
+  const isSummer = month>=3 && month<=9;
+  const now = new Date();
+  const nowMins = now.getHours()*60+now.getMinutes();
+  let html=`<div class="m-chip" style="margin-bottom:.85rem;">📍 Seelow, Brandenburg · ${isSummer?'Summer':'Winter'} schedule (approximate)</div>`;
+  html+='<div>';
+  times.forEach(t=>{
+    const time = isSummer?t.summer:t.winter;
+    const [hh,mm]=time.split(':').map(Number);
+    const tMins=hh*60+mm;
+    const isNext = tMins>nowMins;
+    html+=`<div class="sched-item" style="justify-content:space-between;margin-bottom:.4rem;${isNext&&t.name!=='Sunrise ☀️'?'border-color:var(--gold);background:var(--odim);':''}">
+      <div>
+        <div class="sched-name">${t.name}</div>
+        ${isNext&&t.name!=='Sunrise ☀️'?'<div class="sched-note" style="color:var(--gold);">Next prayer</div>':''}
+      </div>
+      <div style="font-family:monospace;font-weight:800;font-size:1rem;color:${isNext&&t.name!=='Sunrise ☀️'?'var(--gold)':'var(--green)'};">${time}</div>
+    </div>`;
+  });
+  html+=`</div><div class="supp-tip" style="margin-top:.75rem;">⚠️ These are approximate times. For precise times, use <strong>IslamicFinder.org</strong> or the <strong>Muslim Pro</strong> app with your exact location.</div>`;
+  document.getElementById('prayerBody').innerHTML=html;
+}
+
+// ── STYLE ──
+function renderStyle(){
+  const tips=[
+    {ico:'👔',name:'Vinted Germany',tip:'Best for branded second-hand clothes. Search H&M / Zara / Nike — filter by size. Save 60–80% vs retail.'},
+    {ico:'🏪',name:'H&M Student Discount',tip:'Register on H&amp;M website with student email via UNiDAYS — get 15% off all purchases.'},
+    {ico:'🛍️',name:'ASOS Student',tip:'20% off via UNiDAYS. ASOS has huge range and ships to Germany. Great for basics.'},
+    {ico:'🥿',name:'Deichmann',tip:'Affordable shoes — sales up to 50% off. Check on Tuesdays when new stock arrives.'},
+    {ico:'🧥',name:'Primark (Berlin/Frankfurt)',tip:'Cheapest basics in Germany — t-shirts €3, jeans €12. 45 min train from Seelow to Frankfurt (Oder).'},
+    {ico:'♻️',name:'Humana Secondhand',tip:'Charity thrift stores across Germany — jackets €5–15. Great quality often donated by professionals.'},
+    {ico:'📦',name:'Zalando Lounge',tip:'Flash sales up to 75% off premium brands. Free to join. Check daily at 7am for new drops.'},
+    {ico:'✂️',name:'Capsule Wardrobe',tip:'5 key items: dark jeans, white tee, grey hoodie, clean trainers, navy jacket — mix & match everything from these.'},
+  ];
+  let html='';
+  tips.forEach(t=>{
+    html+=`<div class="sched-item" style="flex-direction:column;align-items:flex-start;gap:.2rem;padding:.75rem .9rem;margin-bottom:.35rem;">
+      <div style="display:flex;align-items:center;gap:.5rem;">
+        <span style="font-size:1.2rem;">${t.ico}</span>
+        <div style="font-weight:700;font-size:.85rem;color:var(--cream);">${t.name}</div>
+      </div>
+      <div style="font-size:.72rem;color:var(--muted);line-height:1.4;">${t.tip}</div>
+    </div>`;
+  });
+  document.getElementById('styleBody').innerHTML=html;
+}
+
+// ── WATER ──
+let waterGlasses=0;
+function renderWater(){
+  document.getElementById('waterBody').innerHTML=`
+    <div class="m-card" style="text-align:center;margin-bottom:.75rem;">
+      <div style="font-size:3.5rem;margin-bottom:.5rem;" id="waterEmoji">💧</div>
+      <div style="font-size:2rem;font-weight:900;color:var(--blue);" id="waterCount">0 / 8</div>
+      <div style="font-size:.72rem;color:var(--muted);margin-top:.2rem;">glasses today (250ml each = 2L)</div>
+      <div style="display:flex;gap:.4rem;justify-content:center;flex-wrap:wrap;margin-top:1rem;" id="waterGlasses"></div>
+    </div>
+    <div style="display:flex;gap:.5rem;margin-bottom:.75rem;">
+      <button onclick="addWater()" style="flex:1;padding:.7rem;border-radius:12px;background:var(--blue);border:none;color:#fff;font-weight:800;font-size:.85rem;cursor:pointer;">+ Add Glass</button>
+      <button onclick="resetWater()" style="padding:.7rem 1rem;border-radius:12px;background:var(--glass);border:1px solid var(--border);color:var(--muted);font-weight:700;font-size:.82rem;cursor:pointer;">Reset</button>
+    </div>
+    <div class="supp-tip">💡 Drink a glass after each Salah prayer (5x), one before each main meal (3x) = 8 glasses easily!</div>`;
+  updateWater();
+}
+function addWater(){ if(waterGlasses<8)waterGlasses++; updateWater(); }
+function resetWater(){ waterGlasses=0; updateWater(); }
+function updateWater(){
+  const el=document.getElementById('waterCount');
+  const gEl=document.getElementById('waterGlasses');
+  const emo=document.getElementById('waterEmoji');
+  if(!el)return;
+  el.textContent=waterGlasses+' / 8';
+  el.style.color=waterGlasses>=8?'var(--green)':waterGlasses>=5?'var(--gold)':'var(--blue)';
+  if(emo)emo.textContent=waterGlasses>=8?'🎉':waterGlasses>=5?'🌊':'💧';
+  if(gEl){
+    let h='';
+    for(let i=0;i<8;i++) h+=`<span style="font-size:1.6rem;opacity:${i<waterGlasses?1:.2}">💧</span>`;
+    gEl.innerHTML=h;
+  }
+}
+
+// ── DIABETES / SUGAR ──
+function renderDiabetes(){
+  const foods=[
+    {name:'Tomato Ketchup (1 tbsp)',sugar:'4g',level:'med',tip:'Use mustard instead — 0g sugar.'},
+    {name:'Flavoured Yoghurt (150g)',sugar:'15–20g',level:'high',tip:'Switch to plain yoghurt + fruit. Saves 15g sugar.'},
+    {name:'White Rice (1 cup)',sugar:'45g carbs',level:'med',tip:'Basmati has lower GI than regular rice — better for blood sugar.'},
+    {name:'Orange Juice (250ml)',sugar:'22g',level:'high',tip:'Eat the whole orange instead — fibre slows the sugar spike.'},
+    {name:'Granola Bar',sugar:'12–18g',level:'high',tip:'Oats + peanut butter is cheaper and much lower sugar.'},
+    {name:'Pasta (100g dry)',sugar:'71g carbs',level:'med',tip:'Wholegrain pasta has lower GI and more fibre.'},
+    {name:'Dark Chocolate 85% (30g)',sugar:'5g',level:'low',tip:'Great choice! Much less sugar than milk chocolate.'},
+    {name:'Banana (1 medium)',sugar:'14g',level:'med',tip:'Fine in moderation — best before exercise for quick energy.'},
+    {name:'Lentils (100g cooked)',sugar:'2g',level:'low',tip:'Excellent! High protein, low GI — blood sugar friendly.'},
+    {name:'Eggs (2)',sugar:'0g',level:'low',tip:'Zero sugar, zero carbs — perfect food for blood sugar control.'},
+  ];
+  const levelColors={'high':'#ff8090','med':'var(--gold)','low':'var(--green)'};
+  const levelLabels={'high':'High Sugar','med':'Moderate','low':'Low Sugar ✓'};
+  let html=`<div class="m-chip" style="margin-bottom:.75rem;">💡 Normal fasting blood sugar: 70–100 mg/dL. Get tested yearly.</div>`;
+  foods.forEach(f=>{
+    html+=`<div class="sched-item" style="flex-direction:column;align-items:flex-start;gap:.2rem;padding:.72rem .88rem;margin-bottom:.32rem;">
+      <div style="display:flex;justify-content:space-between;width:100%;align-items:center;">
+        <div style="font-weight:600;font-size:.84rem;color:var(--cream);">${f.name}</div>
+        <span style="font-size:.6rem;font-weight:700;padding:.1rem .38rem;border-radius:6px;color:${levelColors[f.level]};background:${levelColors[f.level]}22;border:1px solid ${levelColors[f.level]}44;">${levelLabels[f.level]}</span>
+      </div>
+      <div style="font-size:.72rem;color:var(--muted);">Sugar: <strong style="color:${levelColors[f.level]}">${f.sugar}</strong></div>
+      <div style="font-size:.7rem;color:var(--muted);line-height:1.35;">${f.tip}</div>
+    </div>`;
+  });
+  document.getElementById('diabetesBody').innerHTML=html;
+}
+
+// ── STUDY TOOLS ──
+let pomodoroTimer=null, pomodoroSecs=25*60, pomodoroRunning=false;
+function renderStudy(){
+  const now=new Date();
+  const examDate=new Date(now.getFullYear(),5,30); // June 30
+  const daysLeft=Math.max(0,Math.ceil((examDate-now)/(1000*60*60*24)));
+  document.getElementById('studyBody').innerHTML=`
+    <!-- Pomodoro -->
+    <div class="m-card" style="text-align:center;margin-bottom:.75rem;">
+      <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.5rem;">🍅 Pomodoro Timer</div>
+      <div style="font-size:3rem;font-weight:900;color:var(--cream);letter-spacing:-.03em;font-variant-numeric:tabular-nums;" id="pomDisplay">25:00</div>
+      <div style="font-size:.68rem;color:var(--muted);margin-bottom:.9rem;">25 min focus · 5 min break</div>
+      <div style="display:flex;gap:.5rem;justify-content:center;">
+        <button onclick="pomStart()" style="padding:.55rem 1.2rem;border-radius:10px;background:var(--green);border:none;color:#07070f;font-weight:800;font-size:.8rem;cursor:pointer;">▶ Start</button>
+        <button onclick="pomPause()" style="padding:.55rem 1rem;border-radius:10px;background:var(--glass);border:1px solid var(--border);color:var(--muted);font-weight:700;font-size:.8rem;cursor:pointer;">⏸ Pause</button>
+        <button onclick="pomReset()" style="padding:.55rem 1rem;border-radius:10px;background:var(--glass);border:1px solid var(--border);color:var(--muted);font-weight:700;font-size:.8rem;cursor:pointer;">↺ Reset</button>
+      </div>
+    </div>
+    <!-- Exam Countdown -->
+    <div class="m-card" style="text-align:center;margin-bottom:.75rem;">
+      <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.35rem;">📅 Exam Season Countdown</div>
+      <div style="font-size:2.5rem;font-weight:900;color:var(--purple);">${daysLeft}</div>
+      <div style="font-size:.72rem;color:var(--muted);">days until June exams</div>
+      ${daysLeft<14?'<div style="font-size:.72rem;color:var(--red);margin-top:.3rem;font-weight:700;">⚠️ Crunch time! Focus now!</div>':''}
+    </div>
+    <!-- GPA Calculator -->
+    <div class="m-card">
+      <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.65rem;">🎓 German Grade Calculator</div>
+      <div style="font-size:.72rem;color:var(--muted);margin-bottom:.5rem;">Enter your grades (1.0 = best, 5.0 = fail)</div>
+      <div style="display:flex;gap:.4rem;margin-bottom:.5rem;">
+        <input id="gpaIn" class="finput" type="number" step="0.1" min="1" max="5" placeholder="e.g. 1.7" style="flex:1;">
+        <button onclick="addGrade()" style="padding:.55rem .9rem;border-radius:10px;background:var(--purple);border:none;color:#fff;font-weight:800;font-size:.82rem;cursor:pointer;">+ Add</button>
+      </div>
+      <div id="gradeList" style="font-size:.78rem;color:var(--muted);min-height:1.5rem;"></div>
+      <div id="gpaResult" style="margin-top:.5rem;"></div>
+    </div>`;
+  renderPomDisplay();
+}
+function renderPomDisplay(){const el=document.getElementById('pomDisplay');if(el){const m=Math.floor(pomodoroSecs/60),s=pomodoroSecs%60;el.textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');}}
+function pomStart(){if(!pomodoroRunning){pomodoroRunning=true;pomodoroTimer=setInterval(()=>{if(pomodoroSecs>0){pomodoroSecs--;renderPomDisplay();}else{clearInterval(pomodoroTimer);pomodoroRunning=false;alert('🍅 Pomodoro done! Take a 5-min break.');}},1000);}}
+function pomPause(){if(pomodoroRunning){clearInterval(pomodoroTimer);pomodoroRunning=false;}}
+function pomReset(){clearInterval(pomodoroTimer);pomodoroRunning=false;pomodoroSecs=25*60;renderPomDisplay();}
+let grades=[];
+function addGrade(){const v=parseFloat(document.getElementById('gpaIn').value);if(isNaN(v)||v<1||v>5){alert('Enter a grade between 1.0 and 5.0');return;}grades.push(v);document.getElementById('gpaIn').value='';const avg=(grades.reduce((a,b)=>a+b,0)/grades.length).toFixed(2);document.getElementById('gradeList').innerHTML=grades.map((g,i)=>`<span style="display:inline-block;margin:.1rem .2rem;padding:.1rem .4rem;border-radius:6px;background:var(--glass);border:1px solid var(--border);">${g.toFixed(1)}</span>`).join('');const col=avg<=1.5?'var(--green)':avg<=2.5?'var(--blue)':avg<=3.5?'var(--gold)':'var(--red)';document.getElementById('gpaResult').innerHTML=`<div style="text-align:center;padding:.6rem;background:var(--glass);border-radius:10px;border:1px solid var(--border);"><div style="font-size:1.5rem;font-weight:900;color:${col};">${avg}</div><div style="font-size:.65rem;color:var(--muted);">Average (${avg<=1.5?'Excellent':avg<=2.5?'Good':avg<=3.5?'Satisfactory':'At risk'})</div></div>`;}
+
 </script>
+
+<!-- DISCOUNTS SUB-SCREEN -->
+<div class="screen" id="scDiscounts">
+  <div class="supp-back" onclick="hideMore('scDiscounts')">← Back to More</div>
+  <div class="supp-hd"><h2>🎟️ Student Discounts in Germany</h2><p>Show your student ID (Studentenausweis) to unlock these deals</p></div>
+  <div id="discountBody"></div>
+</div>
+
+<!-- WEIGHT SUB-SCREEN -->
+<div class="screen" id="scWeight">
+  <div class="supp-back" onclick="hideMore('scWeight')">← Back to More</div>
+  <div class="supp-hd"><h2>⚖️ Weight & BMI Tracker</h2><p>Enter your details to calculate your BMI and healthy weight range</p></div>
+  <div class="m-card" style="margin-bottom:.75rem;">
+    <div class="field"><div class="flbl">Your Weight (kg)</div><input class="finput num green" type="number" id="bmiWeight" placeholder="e.g. 70" style="max-width:100%;"></div>
+    <div class="field"><div class="flbl">Your Height (cm)</div><input class="finput num blue" type="number" id="bmiHeight" placeholder="e.g. 175" style="max-width:100%;"></div>
+    <button onclick="calcBMI()" style="width:100%;padding:.7rem;border-radius:12px;background:linear-gradient(90deg,var(--green),var(--blue));border:none;color:#07070f;font-weight:800;font-size:.88rem;cursor:pointer;margin-top:.4rem;">Calculate BMI</button>
+  </div>
+  <div id="bmiResult"></div>
+</div>
+
+<!-- PRAYER TIMES SUB-SCREEN -->
+<div class="screen" id="scPrayer">
+  <div class="supp-back" onclick="hideMore('scPrayer')">← Back to More</div>
+  <div class="supp-hd"><h2>🕌 Prayer Times — Seelow</h2><p>Approximate times for Seelow, Brandenburg (52.15°N, 14.37°E)</p></div>
+  <div id="prayerBody"></div>
+</div>
+
+<!-- STYLE SUB-SCREEN -->
+<div class="screen" id="scStyle">
+  <div class="supp-back" onclick="hideMore('scStyle')">← Back to More</div>
+  <div class="supp-hd"><h2>👗 Style on a Budget</h2><p>Look good without breaking your €100/month</p></div>
+  <div id="styleBody"></div>
+</div>
+
+<!-- HYDRATION SUB-SCREEN -->
+<div class="screen" id="scWater">
+  <div class="supp-back" onclick="hideMore('scWater')">← Back to More</div>
+  <div class="supp-hd"><h2>💧 Hydration Tracker</h2><p>Target: 8 glasses (2L) per day</p></div>
+  <div id="waterBody"></div>
+</div>
+
+<!-- SUGAR AWARENESS SUB-SCREEN -->
+<div class="screen" id="scDiabetes">
+  <div class="supp-back" onclick="hideMore('scDiabetes')">← Back to More</div>
+  <div class="supp-hd"><h2>🩺 Sugar Awareness</h2><p>Know what's in your food — diabetic-friendly tips</p></div>
+  <div id="diabetesBody"></div>
+</div>
+
+<!-- STUDY TOOLS SUB-SCREEN -->
+<div class="screen" id="scStudy">
+  <div class="supp-back" onclick="hideMore('scStudy')">← Back to More</div>
+  <div class="supp-hd"><h2>🎓 Study Tools</h2><p>Pomodoro timer, GPA calculator & exam countdown</p></div>
+  <div id="studyBody"></div>
+</div>
+
+
+<script>
+// ── PWA MANIFEST (injected dynamically) ──
+(function(){
+  const manifest = {
+    name: "Student Budget Tracker",
+    short_name: "BudgetTracker",
+    description: "Smart student budget & lifestyle companion for Seelow",
+    start_url: "./",
+    display: "standalone",
+    background_color: "#07070f",
+    theme_color: "#00f5a0",
+    orientation: "portrait",
+    icons: [{
+      src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='115' fill='%2307070f'/><text y='.85em' font-size='380' x='65'>💰</text></svg>",
+      sizes: "512x512", type: "image/svg+xml", purpose: "any maskable"
+    }]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  document.getElementById('pwa-manifest').setAttribute('href', url);
+})();
+
+// ── SERVICE WORKER (offline support) ──
+if('serviceWorker' in navigator){
+  // Unregister any old service workers first so stale cache never blocks updates
+  navigator.serviceWorker.getRegistrations().then(regs=>{
+    regs.forEach(reg=>reg.unregister());
+  });
+  // Use a timestamp-based cache key so every new deploy gets a fresh cache
+  const CACHE_VER = 'sbt-' + '2025120801';
+  const swCode = `
+    const CACHE = '${CACHE_VER}';
+    // On install: cache the app shell
+    self.addEventListener('install', e => {
+      self.skipWaiting();
+      e.waitUntil(caches.open(CACHE).then(c => c.addAll(['./'])));
+    });
+    // On activate: delete ALL old caches immediately
+    self.addEventListener('activate', e => {
+      e.waitUntil(
+        caches.keys().then(keys =>
+          Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+        ).then(() => self.clients.claim())
+      );
+    });
+    // NETWORK FIRST — always try network, fall back to cache
+    // This means updates show immediately when online
+    self.addEventListener('fetch', e => {
+      if(e.request.method !== 'GET') return;
+      e.respondWith(
+        fetch(e.request)
+          .then(res => {
+            // Cache the fresh response
+            if(res && res.status === 200){
+              const clone = res.clone();
+              caches.open(CACHE).then(c => c.put(e.request, clone));
+            }
+            return res;
+          })
+          .catch(() => caches.match(e.request)) // offline fallback
+      );
+    });
+  `;
+  const blob = new Blob([swCode], {type:'application/javascript'});
+  const swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).catch(()=>{});
+}
+
+// ── NEW MORE FEATURES ──
+function showMood(){ showMore('scMood', renderMood); }
+function showWeather(){ showMore('scWeather', renderWeather); }
+function showCV(){ showMore('scCV', renderCV); }
+function showSideHustle(){ showMore('scSideHustle', renderSideHustle); }
+
+// New sub-screens already included in MORE_SUBS declaration above
+
+// ── MOOD TRACKER ──
+let moodLog = JSON.parse(localStorage.getItem('moodLog')||'[]');
+const MOODS = [
+  {e:'😊',l:'Happy',c:'var(--green)'},
+  {e:'😌',l:'Calm',c:'var(--blue)'},
+  {e:'😐',l:'Neutral',c:'var(--muted)'},
+  {e:'😔',l:'Low',c:'var(--gold)'},
+  {e:'😰',l:'Stressed',c:'var(--red)'},
+];
+function renderMood(){
+  const today = new Date().toLocaleDateString('en-GB');
+  const todayEntry = moodLog.find(e=>e.date===today);
+  let html = `<div class="m-card" style="text-align:center;margin-bottom:.85rem;">
+    <div style="font-size:.72rem;color:var(--muted);margin-bottom:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;">How are you feeling today?</div>
+    <div style="display:flex;justify-content:center;gap:.5rem;flex-wrap:wrap;">
+      ${MOODS.map(m=>`<button onclick="logMood('${m.l}','${m.e}')" style="display:flex;flex-direction:column;align-items:center;gap:.25rem;padding:.6rem .8rem;border-radius:14px;border:2px solid ${todayEntry&&todayEntry.mood===m.l?m.c:'var(--border)'};background:${todayEntry&&todayEntry.mood===m.l?m.c+'22':'var(--glass)'};cursor:pointer;transition:.18s;">
+        <span style="font-size:1.8rem">${m.e}</span>
+        <span style="font-size:.62rem;font-weight:700;color:${m.c}">${m.l}</span>
+      </button>`).join('')}
+    </div>
+    ${todayEntry?`<div style="margin-top:.75rem;font-size:.78rem;color:var(--green);">✓ Today logged: ${todayEntry.emoji} ${todayEntry.mood}</div>`:''}
+  </div>`;
+  // Last 7 days chart
+  if(moodLog.length>0){
+    html += `<div class="m-card"><div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.6rem;">Last 7 Days</div><div style="display:flex;flex-direction:column;gap:.32rem;">`;
+    const last7 = moodLog.slice(-7).reverse();
+    last7.forEach(e=>{
+      const m = MOODS.find(x=>x.l===e.mood)||MOODS[2];
+      html+=`<div style="display:flex;align-items:center;gap:.6rem;padding:.42rem .7rem;background:var(--glass);border:1px solid var(--border);border-radius:10px;">
+        <span style="font-size:1.2rem">${e.emoji||m.e}</span>
+        <div style="flex:1"><div style="font-size:.78rem;font-weight:600;color:var(--cream)">${e.mood}</div><div style="font-size:.62rem;color:var(--muted)">${e.date}</div></div>
+      </div>`;
+    });
+    html += '</div></div>';
+  }
+  // Tips
+  html += `<div class="supp-tip">💡 Tips: 5-min walks boost mood by 20%. Drink water when stressed. Text a friend. Do 10 deep breaths. These are evidence-based micro-habits.</div>`;
+  document.getElementById('moodBody').innerHTML = html;
+}
+function logMood(mood, emoji){
+  const today = new Date().toLocaleDateString('en-GB');
+  moodLog = moodLog.filter(e=>e.date!==today);
+  moodLog.push({date:today, mood, emoji});
+  if(moodLog.length>30) moodLog=moodLog.slice(-30);
+  localStorage.setItem('moodLog', JSON.stringify(moodLog));
+  renderMood();
+}
+
+// ── WEATHER ──
+function renderWeather(){
+  const el = document.getElementById('weatherBody');
+  // Use Open-Meteo — free, no API key needed
+  fetch('https://api.open-meteo.com/v1/forecast?latitude=52.15&longitude=14.37&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min&timezone=Europe/Berlin&forecast_days=3')
+    .then(r=>r.json())
+    .then(d=>{
+      const cur = d.current;
+      const t = cur.temperature_2m;
+      const hum = cur.relative_humidity_2m;
+      const wind = cur.wind_speed_10m;
+      const wc = cur.weather_code;
+      const emoji = wc<=1?'☀️':wc<=3?'⛅':wc<=48?'🌫️':wc<=57?'🌦️':wc<=65?'🌧️':wc<=77?'❄️':wc<=82?'🌦️':wc<=99?'⛈️':'🌤️';
+      // Clothing advice
+      let outfit;
+      if(t<2) outfit='🧥 Heavy winter coat + thermal layers + gloves + scarf. It is very cold!';
+      else if(t<8) outfit='🧥 Winter coat required. Sweater underneath. Warm shoes.';
+      else if(t<14) outfit='🧶 Light jacket or hoodie. Long sleeves. May need a layer.';
+      else if(t<20) outfit='👕 T-shirt with a light jacket. Comfortable jeans.';
+      else if(t<26) outfit='👕 T-shirt weather! Light comfortable clothes.';
+      else outfit='🌞 Hot day! Light fabrics, stay hydrated. Wear sunscreen.';
+
+      const days = d.daily;
+      el.innerHTML = `
+        <div class="m-card" style="text-align:center;margin-bottom:.85rem;">
+          <div style="font-size:4rem">${emoji}</div>
+          <div style="font-size:2.5rem;font-weight:900;color:var(--cream);letter-spacing:-.03em;margin:.2rem 0">${t}°C</div>
+          <div style="font-size:.72rem;color:var(--muted)">Seelow, Brandenburg · Humidity ${hum}% · Wind ${wind} km/h</div>
+        </div>
+        <div class="supp-tip" style="margin-bottom:.75rem">👗 What to wear: ${outfit}</div>
+        <div class="m-card">
+          <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.6rem">3-Day Forecast</div>
+          <div style="display:flex;gap:.5rem">
+            ${['Today','Tomorrow','Day 3'].map((day,i)=>`
+            <div style="flex:1;text-align:center;padding:.6rem .4rem;background:var(--glass);border:1px solid var(--border);border-radius:12px;">
+              <div style="font-size:.65rem;color:var(--muted);margin-bottom:.3rem">${day}</div>
+              <div style="font-size:1rem;font-weight:800;color:var(--cream)">${Math.round(days.temperature_2m_max[i])}°</div>
+              <div style="font-size:.7rem;color:var(--muted)">${Math.round(days.temperature_2m_min[i])}°</div>
+            </div>`).join('')}
+          </div>
+        </div>`;
+    })
+    .catch(()=>{
+      el.innerHTML='<div class="m-chip bad">⚠️ Could not load weather — check your internet connection and try again.</div>';
+    });
+}
+
+// ── CV BUILDER ──
+function renderCV(){
+  const tips = [
+    {ico:'📋',title:'German CV Format (Lebenslauf)',tip:'German CVs include a professional photo, date of birth, and nationality — unlike UK/US CVs. This is normal and expected.'},
+    {ico:'📸',title:'Professional Photo',tip:'Use a professional headshot (not a selfie). Wear smart clothes. Light neutral background. This is mandatory in Germany.'},
+    {ico:'📏',title:'Length',tip:'Keep it to 1 page if under 5 years experience. 2 pages maximum. Germans prefer concise, structured CVs — no essays.'},
+    {ico:'🔤',title:'Language',tip:'Write in German for German companies. English is fine for international firms or startups. Use simple, direct language.'},
+    {ico:'📚',title:'Education Section',tip:'Put your most recent education first. Include your university, degree, expected graduation year, and GPA (if good). Mention Seelow location and international student status.'},
+    {ico:'💼',title:'Werkstudent / Part-time',tip:'As an international student you can work 120 full days or 240 half days per year. List any part-time jobs — Germans value work ethic.'},
+    {ico:'🌐',title:'Language Skills',tip:'List German level honestly (A1–C2). Even basic German shows effort. Always list English proficiency. Add other languages as a bonus.'},
+    {ico:'🔧',title:'Skills Section',tip:'List technical skills (MS Office, coding, tools). Add soft skills briefly. Keep it scannable — use bullet points not paragraphs.'},
+    {ico:'✉️',title:'Anschreiben (Cover Letter)',tip:'In Germany a Anschreiben (cover letter) is often required. Address it to a specific person. Explain why you want THIS job at THIS company.'},
+    {ico:'🎯',title:'Apply via StepStone / Indeed DE',tip:'StepStone.de and Indeed.de are the top German job sites. Also check your university job board and LinkedIn with location set to Frankfurt/Oder or Berlin.'},
+  ];
+  let html = '';
+  tips.forEach(t=>{
+    html+=`<div class="sched-item" style="flex-direction:column;align-items:flex-start;gap:.2rem;padding:.72rem .88rem;margin-bottom:.32rem;">
+      <div style="display:flex;align-items:center;gap:.5rem;"><span style="font-size:1.1rem">${t.ico}</span><div style="font-weight:700;font-size:.86rem;color:var(--cream)">${t.title}</div></div>
+      <div style="font-size:.72rem;color:var(--muted);line-height:1.4">${t.tip}</div>
+    </div>`;
+  });
+  document.getElementById('cvBody').innerHTML=html;
+}
+
+// ── SIDE HUSTLE ──
+function renderSideHustle(){
+  const hustles = [
+    {ico:'🛵',name:'Delivery (Lieferando)',earn:'€10–13/hr',tip:'Lieferando operates in Frankfurt (Oder) nearby. Flexible hours — perfect between lectures. Bike or scooter. Apply at Lieferando.de.',tag:'Most popular'},
+    {ico:'📦',name:'Amazon Warehouse (Gransee/Berlin)',earn:'€12–14/hr',tip:'Amazon has warehouses near Brandenburg. Weekend shifts available. Register at Amazon.jobs — student shifts often available.',tag:'Steady income'},
+    {ico:'👨‍🏫',name:'Tutoring (Nachhilfe)',earn:'€15–25/hr',tip:'Tutor local students in Maths, Sciences or English. Post on Superprof.de or SchulLV.de. Great for any STEM student.',tag:'High hourly'},
+    {ico:'💻',name:'Fiverr / Upwork Freelancing',earn:'€10–50/hr',tip:'Offer skills online — graphic design, coding, data entry, translation, writing. Build a portfolio and earn in euros from anywhere.',tag:'Remote'},
+    {ico:'🧹',name:'Minijob (up to €538/month)',earn:'~€538/mo',tip:'Minijobs are tax-free up to €538/month — perfect for students. Search on Minijob-Zentrale.de. Supermarkets, cafes and offices always hiring.',tag:'Tax-free'},
+    {ico:'📸',name:'Sell on Vinted / eBay Kleinanzeigen',earn:'€50–200/mo',tip:'Sell second-hand clothes, textbooks, electronics. eBay Kleinanzeigen (now Kleinanzeigen.de) is Germany biggest classifieds site — free to list.',tag:'Passive'},
+    {ico:'🌱',name:'Werkstudent (Working Student)',earn:'€12–18/hr',tip:'Official part-time student employment. Tax benefits apply. Search "Werkstudent" on LinkedIn or StepStone. Usually 15–20 hrs/week during semester.',tag:'Best for CV'},
+    {ico:'🔑',name:'Airbnb Cleaning (Berlin nearby)',earn:'€12–15/hr',tip:'Register as cleaner with Airbnb hosts or agencies. Berlin has huge demand. Search on Helpling.de — flexible schedule, cash-friendly.',tag:'Weekend work'},
+  ];
+  let html = '<div class="supp-tip" style="margin-bottom:.85rem">📋 As a non-EU student you can work max 120 full days or 240 half days per year. Always keep your work contract and payslips.</div>';
+  hustles.forEach(h=>{
+    html+=`<div class="sched-item" style="flex-direction:column;align-items:flex-start;gap:.28rem;padding:.78rem .9rem;margin-bottom:.38rem;">
+      <div style="display:flex;justify-content:space-between;width:100%;align-items:flex-start;">
+        <div style="display:flex;align-items:center;gap:.5rem;"><span style="font-size:1.2rem">${h.ico}</span><div style="font-weight:700;font-size:.86rem;color:var(--cream)">${h.name}</div></div>
+        <span style="font-size:.62rem;font-weight:700;color:var(--green);background:var(--gdim);padding:.1rem .42rem;border-radius:7px;border:1px solid rgba(0,245,160,.2);white-space:nowrap;margin-left:.4rem">${h.earn}</span>
+      </div>
+      <div style="font-size:.7rem;color:var(--muted);line-height:1.4">${h.tip}</div>
+      <span style="font-size:.58rem;font-weight:700;padding:.08rem .38rem;border-radius:6px;background:var(--glass);color:var(--muted);border:1px solid var(--border)">${h.tag}</span>
+    </div>`;
+  });
+  document.getElementById('sideHustleBody').innerHTML=html;
+}
+
+</script>
+
+
+<!-- MOOD TRACKER -->
+<div class="screen" id="scMood">
+  <div class="supp-back" onclick="hideMore('scMood')">← Back to More</div>
+  <div class="supp-hd"><h2>🧠 Mood & Mental Wellness</h2><p>Track how you feel daily — small check-ins make a big difference</p></div>
+  <div id="moodBody"></div>
+</div>
+
+<!-- WEATHER -->
+<div class="screen" id="scWeather">
+  <div class="supp-back" onclick="hideMore('scWeather')">← Back to More</div>
+  <div class="supp-hd"><h2>🌤️ Seelow Weather</h2><p>Live weather data + clothing suggestions for today</p></div>
+  <div id="weatherBody"><div class="m-chip">⏳ Loading weather...</div></div>
+</div>
+
+<!-- CV BUILDER -->
+<div class="screen" id="scCV">
+  <div class="supp-back" onclick="hideMore('scCV')">← Back to More</div>
+  <div class="supp-hd"><h2>📄 CV Builder Tips</h2><p>German Lebenslauf format — what employers expect</p></div>
+  <div id="cvBody"></div>
+</div>
+
+<!-- SIDE HUSTLE -->
+<div class="screen" id="scSideHustle">
+  <div class="supp-back" onclick="hideMore('scSideHustle')">← Back to More</div>
+  <div class="supp-hd"><h2>💼 Side Hustle Ideas in Germany</h2><p>Legal ways to earn extra money as an international student</p></div>
+  <div id="sideHustleBody"></div>
+</div>
+
 </body>
 </html>
